@@ -40,7 +40,7 @@
     </appender>
 
     <!-- SQL日志 -->
-    <logger name="com.example.eventhub" level="DEBUG"/>
+    <logger name="com.bubbles.eventhub" level="DEBUG"/>
     <logger name="org.mybatis" level="DEBUG"/>
     <logger name="com.baomidou.mybatisplus" level="DEBUG"/>
     <logger name="java.sql" level="DEBUG"/>

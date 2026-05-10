@@ -13,7 +13,7 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>com.example.eventhub.config.AppConfig</param-value>
+        <param-value>com.bubbles.eventhub.config.AppConfig</param-value>
     </context-param>
 
     <listener>
@@ -29,7 +29,7 @@
         </init-param>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>com.example.eventhub.config.WebConfig</param-value>
+            <param-value>com.bubbles.eventhub.config.WebConfig</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
