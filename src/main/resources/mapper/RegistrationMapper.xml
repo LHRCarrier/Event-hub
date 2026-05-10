@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.eventhub.mapper.RegistrationMapper">
+
+    <resultMap id="RegistrationResultMap" type="com.example.eventhub.entity.Registration">
+        <id column="registration_id" property="registrationId" />
+        <result column="event_id" property="eventId" />
+        <result column="user_id" property="userId" />
+        <result column="status" property="status" />
+        <result column="register_time" property="registerTime" />
+    </resultMap>
+
+    <resultMap id="RegistrationWithEventResultMap" type="com.example.eventhub.entity.Registration" extends="RegistrationResultMap">
+        <result column="event_name" property="eventName" />
+        <result column="event_date" property="eventDate" />
+    </resultMap>
+
+    <resultMap id="RegistrationWithUserResultMap" type="com.example.eventhub.entity.Registration" extends="RegistrationResultMap">
+        <result column="username" property="username" />
+        <result column="email" property="email" />
+    </resultMap>
+
+</mapper>
