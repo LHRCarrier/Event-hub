@@ -1,0 +1,22 @@
+<div id="page-create-category" class="page-content d-none">
+    <div class="mb-4">
+        <button class="btn btn-outline-primary" onclick="showPage('categories')">← Back</button>
+    </div>
+    <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
+        <h2 class="text-xl font-bold mb-6">Create New Category</h2>
+        <form id="createCategoryForm">
+            <div class="mb-4">
+                <label class="form-label font-medium">Category Name</label>
+                <input type="text" class="form-control" id="categoryName" placeholder="Enter category name">
+            </div>
+            <div class="mb-4">
+                <label class="form-label font-medium">Description</label>
+                <textarea class="form-control" rows="3" id="categoryDescription" placeholder="Enter description"></textarea>
+            </div>
+            <div class="d-flex gap-3">
+                <button type="button" class="btn btn-secondary" onclick="showPage('categories')">Cancel</button>
+                <button type="submit" class="btn btn-primary ms-auto">Create Category</button>
+            </div>
+        </form>
+    </div>
+</div>
