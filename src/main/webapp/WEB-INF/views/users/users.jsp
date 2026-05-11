@@ -1,0 +1,23 @@
+<div id="page-users" class="page-content d-none">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Users Management</h2>
+        <button class="btn btn-primary" onclick="showPage('create-user')">+ New User</button>
+    </div>
+    <div class="table-container p-4">
+        <table class="table" id="usersTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <nav class="mt-4" aria-label="Page navigation">
+            <ul class="pagination justify-content-center" id="usersPagination"></ul>
+        </nav>
+    </div>
+</div>

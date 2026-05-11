@@ -1,5 +1,4 @@
 let currentUser = null;
-let currentToken = '';
 
 const PUBLIC_PAGES = ['login', 'register'];
 const PROTECTED_PAGES = ['home', 'events', 'registrations', 'users', 'categories', 'dashboard', 'profile', 'event-detail', 'create-event', 'create-category'];
@@ -14,7 +13,7 @@ function initAuth() {
                 username: userData.username,
                 role: userData.role
             };
-            currentToken = userData.token;
+            setToken(userData.token);
             document.getElementById('currentUsername').textContent = currentUser.username;
         } catch (e) {
             clearAuth();
@@ -23,12 +22,11 @@ function initAuth() {
 }
 
 function isLoggedIn() {
-    return currentUser !== null && currentToken !== '';
+    return currentUser !== null;
 }
 
 function clearAuth() {
     currentUser = null;
-    currentToken = '';
     localStorage.removeItem('eventhub_user');
     sessionStorage.removeItem('eventhub_user');
 }
@@ -69,7 +67,6 @@ function showPage(pageName) {
         navLink.classList.add('active');
     }
     
-    // Don't update hash if it's already correct (prevents infinite loop)
     if (window.location.hash !== '#' + pageName) {
         window.location.hash = pageName;
     }
@@ -93,35 +90,8 @@ function showPage(pageName) {
     }
 }
 
-async function fetchApi(url, options = {}) {
-    const defaultOptions = {
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    };
-    if (currentToken) {
-        defaultOptions.headers['Authorization'] = 'Bearer ' + currentToken;
-    }
-    
-    try {
-        const response = await fetch(API_BASE + url, { ...defaultOptions, ...options });
-        
-        if (response.status === 401) {
-            clearAuth();
-            sessionStorage.setItem('redirect_url', window.location.href);
-            window.location.href = 'login.jsp';
-            return { code: 401, message: 'Unauthorized' };
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('API error:', error);
-        return { code: 500, message: 'Network error' };
-    }
-}
-
 async function loadHomePage() {
-    const statsResult = await fetchApi('/dashboard/stats');
+    const statsResult = await DashboardAPI.getStats();
     if (statsResult.code === 200) {
         document.getElementById('statUpcoming').textContent = statsResult.data.upcomingEvents;
         document.getElementById('statParticipants').textContent = statsResult.data.totalRegistrations;
@@ -133,7 +103,7 @@ async function loadHomePage() {
 }
 
 async function loadUpcomingEvents() {
-    const result = await fetchApi('/events?status=UPCOMING&size=4');
+    const result = await EventsAPI.getEvents(1, 4, 'UPCOMING');
     if (result.code === 200) {
         const eventList = document.getElementById('eventList');
         eventList.innerHTML = '';
@@ -183,7 +153,7 @@ function formatDate(dateStr) {
 }
 
 async function loadEvents(page) {
-    const result = await fetchApi(`/events?page=${page}&size=10`);
+    const result = await EventsAPI.getEvents(page, 10);
     if (result.code === 200) {
         const tbody = document.querySelector('#eventsTable tbody');
         tbody.innerHTML = '';
@@ -211,7 +181,7 @@ async function loadEvents(page) {
 }
 
 async function viewEvent(eventId) {
-    const result = await fetchApi(`/events/${eventId}`);
+    const result = await EventsAPI.getEvent(eventId);
     if (result.code === 200) {
         const event = result.data;
         const detail = document.getElementById('eventDetail');
@@ -261,7 +231,7 @@ async function viewEvent(eventId) {
 async function deleteEvent(eventId) {
     if (!confirm('Are you sure you want to delete this event?')) return;
     
-    const result = await fetchApi(`/events/${eventId}`, { method: 'DELETE' });
+    const result = await EventsAPI.deleteEvent(eventId);
     if (result.code === 200) {
         alert('Event deleted successfully');
         loadEvents(1);
@@ -272,7 +242,7 @@ async function deleteEvent(eventId) {
 }
 
 async function loadCategoriesForSelect() {
-    const result = await fetchApi('/categories');
+    const result = await CategoriesAPI.getCategories();
     if (result.code === 200) {
         const select = document.getElementById('eventCategory');
         select.innerHTML = '<option value="">Select category</option>';
@@ -301,15 +271,12 @@ async function handleCreateEvent(e) {
     const categoryId = document.getElementById('eventCategory').value;
     const description = document.getElementById('eventDescription').value;
     
-    const result = await fetchApi('/events', {
-        method: 'POST',
-        body: JSON.stringify({ 
-            name, 
-            date: formatDateTimeForApi(date), 
-            location, 
-            categoryId: categoryId ? parseInt(categoryId) : null, 
-            description 
-        })
+    const result = await EventsAPI.createEvent({ 
+        name, 
+        date: formatDateTimeForApi(date), 
+        location, 
+        categoryId: categoryId ? parseInt(categoryId) : null, 
+        description 
     });
     
     if (result.code === 201) {
@@ -321,7 +288,7 @@ async function handleCreateEvent(e) {
 }
 
 async function loadUsers(page) {
-    const result = await fetchApi(`/users?page=${page}&size=10`);
+    const result = await UsersAPI.getUsers(page, 10);
     if (result.code === 200) {
         const tbody = document.querySelector('#usersTable tbody');
         tbody.innerHTML = '';
@@ -349,7 +316,7 @@ async function loadUsers(page) {
 async function deleteUser(userId) {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
-    const result = await fetchApi(`/users/${userId}`, { method: 'DELETE' });
+    const result = await UsersAPI.deleteUser(userId);
     if (result.code === 200) {
         alert('User deleted successfully');
         loadUsers(1);
@@ -359,7 +326,7 @@ async function deleteUser(userId) {
 }
 
 async function loadCategories() {
-    const result = await fetchApi('/categories');
+    const result = await CategoriesAPI.getCategories();
     if (result.code === 200) {
         const list = document.getElementById('categoriesList');
         list.innerHTML = '';
@@ -389,7 +356,7 @@ async function loadCategories() {
 async function deleteCategory(categoryId) {
     if (!confirm('Are you sure you want to delete this category?')) return;
     
-    const result = await fetchApi(`/categories/${categoryId}`, { method: 'DELETE' });
+    const result = await CategoriesAPI.deleteCategory(categoryId);
     if (result.code === 200) {
         alert('Category deleted successfully');
         loadCategories();
@@ -403,10 +370,7 @@ async function handleCreateCategory(e) {
     const name = document.getElementById('categoryName').value;
     const description = document.getElementById('categoryDescription').value;
     
-    const result = await fetchApi('/categories', {
-        method: 'POST',
-        body: JSON.stringify({ name, description })
-    });
+    const result = await CategoriesAPI.createCategory({ name, description });
     
     if (result.code === 201) {
         alert('Category created successfully');
@@ -417,7 +381,7 @@ async function handleCreateCategory(e) {
 }
 
 async function loadDashboard() {
-    const statsResult = await fetchApi('/dashboard/stats');
+    const statsResult = await DashboardAPI.getStats();
     if (statsResult.code === 200) {
         document.getElementById('dbTotalRegistrations').textContent = statsResult.data.totalRegistrations;
         document.getElementById('dbTotalEvents').textContent = statsResult.data.totalEvents;
@@ -453,7 +417,7 @@ async function loadDashboard() {
 async function loadRegistrations() {
     if (!currentUser) return;
     
-    const result = await fetchApi('/registrations/user/' + currentUser.userId);
+    const result = await RegistrationsAPI.getRegistrationsByUser(currentUser.userId);
     if (result.code === 200) {
         const tbody = document.querySelector('#registrationsTable tbody');
         tbody.innerHTML = '';
@@ -475,7 +439,7 @@ async function loadRegistrations() {
 async function cancelRegistration(registrationId) {
     if (!confirm('Are you sure you want to cancel this registration?')) return;
     
-    const result = await fetchApi(`/registrations/${registrationId}`, { method: 'DELETE' });
+    const result = await RegistrationsAPI.cancelRegistration(registrationId);
     if (result.code === 200) {
         alert('Registration cancelled');
         loadRegistrations();
@@ -487,7 +451,7 @@ async function cancelRegistration(registrationId) {
 async function loadProfile() {
     if (!currentUser) return;
     
-    const result = await fetchApi('/users/' + currentUser.userId);
+    const result = await UsersAPI.getUser(currentUser.userId);
     if (result.code === 200) {
         const user = result.data;
         document.getElementById('profileUsername').value = user.username;
@@ -503,10 +467,7 @@ async function handleUpdateProfile(e) {
     const phone = document.getElementById('profilePhone').value;
     const realName = document.getElementById('profileRealName').value;
     
-    const result = await fetchApi(`/users/${currentUser.userId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ email, phone, realName })
-    });
+    const result = await UsersAPI.updateUser(currentUser.userId, { email, phone, realName });
     
     if (result.code === 200) {
         alert('Profile updated successfully');
@@ -520,12 +481,7 @@ function searchEvents() {
     const keyword = document.getElementById('searchInput').value;
     if (!keyword.trim()) return;
     
-    let url = `/search/events?keyword=${encodeURIComponent(keyword)}`;
-    url += '&categoryId=';
-    url += '&startDate=';
-    url += '&endDate=';
-    
-    fetchApi(url).then(result => {
+    EventsAPI.searchEvents(keyword).then(result => {
         if (result.code === 200 && result.data.length > 0) {
             const eventList = document.getElementById('eventList');
             eventList.innerHTML = '';
@@ -545,10 +501,7 @@ async function registerForEvent(eventId) {
         return;
     }
     
-    const result = await fetchApi('/registrations', {
-        method: 'POST',
-        body: JSON.stringify({ eventId, userId: currentUser.userId })
-    });
+    const result = await RegistrationsAPI.createRegistration({ eventId, userId: currentUser.userId });
     
     if (result.code === 201) {
         alert('Registration successful');
@@ -612,12 +565,12 @@ function renderPagination(data, containerId, loadFunction) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    setApiBase(window.API_BASE);
     initAuth();
     
-    // Check login status first
     const savedUser = localStorage.getItem('eventhub_user') || sessionStorage.getItem('eventhub_user');
     if (!savedUser) {
-        sessionStorage.setItem('redirect_url', redirectUrl);
+        sessionStorage.setItem('redirect_url', window.redirectUrl);
         window.location.href = 'login.jsp';
         return;
     }

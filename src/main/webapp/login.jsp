@@ -126,11 +126,13 @@
 
                 if (result.code === 200) {
                     const userData = {
+
                         userId: result.data.userId,
                         username: result.data.username,
                         role: result.data.role,
                         token: result.data.token
                     };
+                    console.log("用户登录数据:",userData)
 
                     if (rememberMe) {
                         localStorage.setItem('eventhub_user', JSON.stringify(userData));

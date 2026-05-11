@@ -1,0 +1,8 @@
+<div id="page-categories" class="page-content d-none">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Categories Management</h2>
+        <button class="btn btn-primary" onclick="showPage('create-category')">+ New Category</button>
+    </div>
+    <div class="row" id="categoriesList">
+    </div>
+</div>
