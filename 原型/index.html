@@ -12,6 +12,7 @@
             --sidebar-bg: #1a237e;
             --sidebar-active: #3949ab;
             --bg-color: #f5f7fa;
+            --community-color: #673ab7;
         }
         body {
             background-color: var(--bg-color);
@@ -58,6 +59,21 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
+        .community-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 4px solid var(--community-color);
+        }
+        .community-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .community-banner {
+            height: 100px;
+            background: linear-gradient(135deg, var(--community-color), #9575cd);
+        }
         .event-banner {
             height: 120px;
             background: linear-gradient(135deg, var(--primary-color), #42a5f5);
@@ -69,6 +85,16 @@
         }
         .btn-primary:hover {
             background-color: #1976d2 !important;
+        }
+        .btn-community {
+            background-color: var(--community-color) !important;
+            border: none;
+            border-radius: 8px;
+            color: white;
+        }
+        .btn-community:hover {
+            background-color: #5e35b1 !important;
+            color: white;
         }
         .table-container {
             background: white;
@@ -95,6 +121,14 @@
             background-color: #ffcdd2;
             color: #c62828;
         }
+        .badge-admin {
+            background-color: #e1bee7;
+            color: #6a1b9a;
+        }
+        .badge-member {
+            background-color: #bbdefb;
+            color: #1565c0;
+        }
         .login-container {
             max-width: 400px;
             margin: 100px auto;
@@ -106,6 +140,30 @@
         .form-control:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.25);
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -143,8 +201,11 @@
                 <h4 class="text-center font-bold">EventHub</h4>
             </div>
             <nav class="nav flex-column p-2">
-                <a class="nav-link active" href="#home" onclick="showPage('home')">
+                <a class="nav-link" href="#home" onclick="showPage('home')">
                     <i class="fas fa-home"></i> Home
+                </a>
+                <a class="nav-link" href="#communities" onclick="showPage('communities')">
+                    <i class="fas fa-users"></i> Communities
                 </a>
                 <a class="nav-link" href="#events" onclick="showPage('events')">
                     <i class="fas fa-calendar"></i> Events
@@ -153,7 +214,7 @@
                     <i class="fas fa-file-alt"></i> Registrations
                 </a>
                 <a class="nav-link" href="#users" onclick="showPage('users')">
-                    <i class="fas fa-users"></i> Users
+                    <i class="fas fa-user"></i> Users
                 </a>
                 <a class="nav-link" href="#categories" onclick="showPage('categories')">
                     <i class="fas fa-tags"></i> Categories
@@ -242,16 +303,65 @@
                     </div>
                     <div class="col-md-3">
                         <div class="stat-card p-4 bg-white">
+                            <div class="text-3xl mb-2">🏘️</div>
+                            <div class="text-2xl font-bold text-gray-800">12</div>
+                            <div class="text-sm text-gray-500">Communities</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-4 bg-white">
                             <div class="text-3xl mb-2">👤</div>
                             <div class="text-2xl font-bold text-gray-800">89</div>
                             <div class="text-sm text-gray-500">Active Users</div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card p-4 bg-white">
-                            <div class="text-3xl mb-2">🏷️</div>
-                            <div class="text-2xl font-bold text-gray-800">8</div>
-                            <div class="text-sm text-gray-500">Categories</div>
+                </div>
+
+                <div class="mb-4 d-flex justify-content-between">
+                    <h3>Your Communities</h3>
+                    <a href="#communities" onclick="showPage('communities')" class="text-primary">View All →</a>
+                </div>
+                <div class="row mb-6">
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Tech Community</h5>
+                                <p class="text-sm text-gray-500 mb-2">150 members</p>
+                                <div class="d-flex items-center">
+                                    <span class="badge badge-admin">Admin</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner" style="background: linear-gradient(135deg, #ff9800, #ffb74d);"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Sports Club</h5>
+                                <p class="text-sm text-gray-500 mb-2">89 members</p>
+                                <div class="d-flex items-center">
+                                    <span class="badge badge-member">Member</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner" style="background: linear-gradient(135deg, #e91e63, #f48fb1);"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Art Society</h5>
+                                <p class="text-sm text-gray-500 mb-2">67 members</p>
+                                <div class="d-flex items-center">
+                                    <span class="badge badge-member">Member</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-primary cursor-pointer transition">
+                            <div class="text-4xl mb-2 text-gray-400">+</div>
+                            <div class="text-gray-500">Join Community</div>
                         </div>
                     </div>
                 </div>
@@ -308,6 +418,309 @@
                 </div>
             </div>
 
+            <div id="page-communities" class="page-content d-none">
+                <div class="d-flex justify-content-between mb-4">
+                    <h2>Community Management</h2>
+                    <button class="btn btn-community" onclick="showPage('create-community')">+ New Community</button>
+                </div>
+                
+                <div class="row mb-6">
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Tech Community</h5>
+                                <p class="text-sm text-gray-500 mb-2">Technology enthusiasts community</p>
+                                <div class="d-flex items-center justify-between mb-3">
+                                    <span class="text-xs text-gray-500">150 members</span>
+                                    <span class="text-xs text-gray-500">8 events</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="showPage('community-detail')">View</button>
+                                    <button class="btn btn-sm btn-warning">Edit</button>
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner" style="background: linear-gradient(135deg, #ff9800, #ffb74d);"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Sports Club</h5>
+                                <p class="text-sm text-gray-500 mb-2">Sports and fitness enthusiasts</p>
+                                <div class="d-flex items-center justify-between mb-3">
+                                    <span class="text-xs text-gray-500">89 members</span>
+                                    <span class="text-xs text-gray-500">12 events</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="showPage('community-detail')">View</button>
+                                    <button class="btn btn-sm btn-warning">Edit</button>
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner" style="background: linear-gradient(135deg, #e91e63, #f48fb1);"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Art Society</h5>
+                                <p class="text-sm text-gray-500 mb-2">Art lovers and creators</p>
+                                <div class="d-flex items-center justify-between mb-3">
+                                    <span class="text-xs text-gray-500">67 members</span>
+                                    <span class="text-xs text-gray-500">5 events</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="showPage('community-detail')">View</button>
+                                    <button class="btn btn-sm btn-warning">Edit</button>
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4">
+                        <div class="community-card bg-white">
+                            <div class="community-banner" style="background: linear-gradient(135deg, #4caf50, #81c784);"></div>
+                            <div class="p-4">
+                                <h5 class="font-bold">Music Club</h5>
+                                <p class="text-sm text-gray-500 mb-2">Music lovers and musicians</p>
+                                <div class="d-flex items-center justify-between mb-3">
+                                    <span class="text-xs text-gray-500">124 members</span>
+                                    <span class="text-xs text-gray-500">15 events</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="showPage('community-detail')">View</button>
+                                    <button class="btn btn-sm btn-warning">Edit</button>
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-4">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-community cursor-pointer transition">
+                            <div class="text-4xl mb-2 text-gray-400">+</div>
+                            <div class="text-gray-500">Create Community</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-community-detail" class="page-content d-none">
+                <div class="mb-4">
+                    <button class="btn btn-outline-primary" onclick="showPage('communities')">← Back</button>
+                </div>
+                
+                <div class="bg-white rounded-xl overflow-hidden mb-6">
+                    <div class="community-banner p-6">
+                        <h1 class="text-white text-3xl font-bold">Tech Community</h1>
+                        <p class="text-purple-100 mt-2">Technology enthusiasts community for sharing knowledge and networking</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="row mb-6">
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="text-2xl mb-2">👥</div>
+                                    <div class="font-medium">150 Members</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="text-2xl mb-2">📅</div>
+                                    <div class="font-medium">8 Events</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="text-2xl mb-2">📊</div>
+                                    <div class="font-medium">Active</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="text-2xl mb-2">🏷️</div>
+                                    <div class="font-medium">Tech Category</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="font-bold mb-3">About</h3>
+                            <p class="text-gray-600">Welcome to the Tech Community! We are a group of technology enthusiasts who love to share knowledge, discuss latest trends, and organize workshops. Join us to connect with like-minded individuals and stay updated with the latest in tech.</p>
+                        </div>
+
+                        <div class="d-flex gap-3 mb-6">
+                            <button class="btn btn-primary">Create Event</button>
+                            <button class="btn btn-warning">Edit Community</button>
+                            <button class="btn btn-danger">Delete Community</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="bg-white rounded-xl p-4 shadow-sm">
+                            <div class="d-flex justify-content-between mb-4">
+                                <h3 class="font-bold">Members</h3>
+                                <button class="btn btn-sm btn-community" onclick="showPage('community-members')">Manage Members</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white">A</div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="font-medium">Admin User</p>
+                                        <p class="text-xs text-gray-500">Admin</p>
+                                    </div>
+                                    <span class="badge badge-admin">ADMIN</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">J</div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="font-medium">John Smith</p>
+                                        <p class="text-xs text-gray-500">Member since May 2024</p>
+                                    </div>
+                                    <span class="badge badge-member">MEMBER</span>
+                                </div>
+                                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">J</div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="font-medium">Jane Doe</p>
+                                        <p class="text-xs text-gray-500">Member since June 2024</p>
+                                    </div>
+                                    <span class="badge badge-member">MEMBER</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="bg-white rounded-xl p-4 shadow-sm">
+                            <div class="d-flex justify-content-between mb-4">
+                                <h3 class="font-bold">Upcoming Events</h3>
+                                <button class="btn btn-sm btn-primary" onclick="showPage('create-event')">+ New Event</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <h5 class="font-medium">Tech Workshop 2024</h5>
+                                    <p class="text-xs text-gray-500">May 15, 2024 - Community Center</p>
+                                    <div class="mt-2">
+                                        <button class="btn btn-xs btn-primary">Register</button>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <h5 class="font-medium">AI Seminar</h5>
+                                    <p class="text-xs text-gray-500">May 28, 2024 - Tech Hub</p>
+                                    <div class="mt-2">
+                                        <button class="btn btn-xs btn-primary">Register</button>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <h5 class="font-medium">Cloud Computing Meetup</h5>
+                                    <p class="text-xs text-gray-500">June 5, 2024 - Innovation Center</p>
+                                    <div class="mt-2">
+                                        <button class="btn btn-xs btn-primary">Register</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-create-community" class="page-content d-none">
+                <div class="mb-4">
+                    <button class="btn btn-outline-primary" onclick="showPage('communities')">← Back</button>
+                </div>
+                <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
+                    <h2 class="text-xl font-bold mb-6">Create New Community</h2>
+                    <form>
+                        <div class="mb-4">
+                            <label class="form-label font-medium">Community Name</label>
+                            <input type="text" class="form-control" placeholder="Enter community name">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label font-medium">Description</label>
+                            <textarea class="form-control" rows="4" placeholder="Enter community description"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label font-medium">Logo URL (Optional)</label>
+                            <input type="text" class="form-control" placeholder="Enter logo URL">
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button type="button" class="btn btn-secondary" onclick="showPage('communities')">Cancel</button>
+                            <button type="submit" class="btn btn-community ms-auto">Create Community</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="page-community-members" class="page-content d-none">
+                <div class="mb-4">
+                    <button class="btn btn-outline-primary" onclick="showPage('community-detail')">← Back</button>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <div class="d-flex justify-content-between mb-4">
+                        <h2>Community Members (150)</h2>
+                        <button class="btn btn-primary">Invite Member</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Join Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>admin</td>
+                                <td>admin@eventhub.com</td>
+                                <td><span class="badge badge-admin">ADMIN</span></td>
+                                <td>May 1, 2024</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning">Change Role</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>john_smith</td>
+                                <td>john@example.com</td>
+                                <td><span class="badge badge-member">MEMBER</span></td>
+                                <td>May 10, 2024</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning">Promote to Admin</button>
+                                    <button class="btn btn-sm btn-danger ms-2">Remove</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>jane_doe</td>
+                                <td>jane@example.com</td>
+                                <td><span class="badge badge-member">MEMBER</span></td>
+                                <td>May 12, 2024</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning">Promote to Admin</button>
+                                    <button class="btn btn-sm btn-danger ms-2">Remove</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <nav class="mt-4" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
             <div id="page-events" class="page-content d-none">
                 <div class="d-flex justify-content-between mb-4">
                     <h2>Events Management</h2>
@@ -318,6 +731,7 @@
                         <thead>
                             <tr>
                                 <th>Event Name</th>
+                                <th>Community</th>
                                 <th>Date</th>
                                 <th>Location</th>
                                 <th>Category</th>
@@ -328,6 +742,7 @@
                         <tbody>
                             <tr>
                                 <td>Tech Workshop</td>
+                                <td>Tech Community</td>
                                 <td>May 15, 2024</td>
                                 <td>Community Center</td>
                                 <td>Tech</td>
@@ -340,6 +755,7 @@
                             </tr>
                             <tr>
                                 <td>Sports Day</td>
+                                <td>Sports Club</td>
                                 <td>May 20, 2024</td>
                                 <td>City Stadium</td>
                                 <td>Sports</td>
@@ -352,6 +768,7 @@
                             </tr>
                             <tr>
                                 <td>Music Festival</td>
+                                <td>Music Club</td>
                                 <td>April 10, 2024</td>
                                 <td>Central Park</td>
                                 <td>Cultural</td>
@@ -404,6 +821,7 @@
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <div class="text-2xl mb-2">🏷️</div>
                                     <div class="font-medium">Tech</div>
+                                    <div class="text-sm text-gray-500">Tech Community</div>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -462,6 +880,16 @@
                             <input type="text" class="form-control" placeholder="Enter event name">
                         </div>
                         <div class="mb-4">
+                            <label class="form-label font-medium">Community</label>
+                            <select class="form-control">
+                                <option>Select community</option>
+                                <option>Tech Community</option>
+                                <option>Sports Club</option>
+                                <option>Art Society</option>
+                                <option>Music Club</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
                             <label class="form-label font-medium">Event Date</label>
                             <input type="datetime-local" class="form-control">
                         </div>
@@ -498,6 +926,7 @@
                         <thead>
                             <tr>
                                 <th>Event Name</th>
+                                <th>Community</th>
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Register Date</th>
@@ -507,6 +936,7 @@
                         <tbody>
                             <tr>
                                 <td>Tech Workshop</td>
+                                <td>Tech Community</td>
                                 <td>john_smith</td>
                                 <td>john@example.com</td>
                                 <td>May 10, 2024</td>
@@ -514,6 +944,7 @@
                             </tr>
                             <tr>
                                 <td>Sports Day</td>
+                                <td>Sports Club</td>
                                 <td>jane_doe</td>
                                 <td>jane@example.com</td>
                                 <td>May 12, 2024</td>
@@ -537,6 +968,7 @@
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
+                                <th>Joined Communities</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -546,6 +978,7 @@
                                 <td>john@example.com</td>
                                 <td>User</td>
                                 <td><span class="badge badge-success">Active</span></td>
+                                <td>2</td>
                                 <td>
                                     <button class="btn btn-sm btn-primary">View</button>
                                     <button class="btn btn-sm btn-warning ms-2">Edit</button>
@@ -557,6 +990,7 @@
                                 <td>admin@eventhub.com</td>
                                 <td>Admin</td>
                                 <td><span class="badge badge-success">Active</span></td>
+                                <td>3</td>
                                 <td>
                                     <button class="btn btn-sm btn-primary">View</button>
                                     <button class="btn btn-sm btn-warning ms-2">Edit</button>
@@ -640,16 +1074,16 @@
                     </div>
                     <div class="col-md-3">
                         <div class="stat-card p-4 bg-white">
-                            <div class="text-3xl mb-2">👤</div>
-                            <div class="text-2xl font-bold text-gray-800">128</div>
-                            <div class="text-sm text-gray-500">Total Users</div>
+                            <div class="text-3xl mb-2">🏘️</div>
+                            <div class="text-2xl font-bold text-gray-800">12</div>
+                            <div class="text-sm text-gray-500">Total Communities</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="stat-card p-4 bg-white">
-                            <div class="text-3xl mb-2">📈</div>
-                            <div class="text-2xl font-bold text-green-600">+24%</div>
-                            <div class="text-sm text-gray-500">Growth Rate</div>
+                            <div class="text-3xl mb-2">👤</div>
+                            <div class="text-2xl font-bold text-gray-800">128</div>
+                            <div class="text-sm text-gray-500">Total Users</div>
                         </div>
                     </div>
                 </div>
@@ -684,23 +1118,32 @@
                     </div>
                     <div class="col-md-6">
                         <div class="bg-white rounded-xl p-4 shadow-sm">
-                            <h3 class="font-bold mb-4">Events by Category</h3>
-                            <div class="h-48 flex items-center justify-center">
-                                <div class="relative w-32 h-32">
-                                    <div class="absolute inset-0 rounded-full bg-primary/60" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 30% 0%);"></div>
-                                    <div class="absolute inset-0 rounded-full bg-orange-500/60" style="clip-path: polygon(50% 50%, 30% 0%, 50% 0%);"></div>
-                                    <div class="absolute inset-0 rounded-full bg-pink-500/60" style="clip-path: polygon(50% 50%, 50% 0%, 70% 0%);"></div>
-                                    <div class="absolute inset-0 rounded-full bg-green-500/60" style="clip-path: polygon(50% 50%, 70% 0%, 100% 0%);"></div>
-                                    <div class="absolute inset-4 rounded-full bg-white flex items-center justify-center">
-                                        <span class="text-xs text-center">8<br>Categories</span>
+                            <h3 class="font-bold mb-4">Events by Community</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <div class="flex-1 bg-purple-100 rounded-full h-4">
+                                        <div class="bg-purple-500 h-4 rounded-full" style="width: 35%"></div>
                                     </div>
+                                    <span class="ml-3 text-sm">Tech Community (16)</span>
                                 </div>
-                            </div>
-                            <div class="mt-4 space-y-2">
-                                <div class="flex items-center"><span class="w-3 h-3 bg-primary rounded mr-2"></span><span class="text-sm">Tech (35%)</span></div>
-                                <div class="flex items-center"><span class="w-3 h-3 bg-orange-500 rounded mr-2"></span><span class="text-sm">Sports (25%)</span></div>
-                                <div class="flex items-center"><span class="w-3 h-3 bg-pink-500 rounded mr-2"></span><span class="text-sm">Cultural (20%)</span></div>
-                                <div class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded mr-2"></span><span class="text-sm">Art (20%)</span></div>
+                                <div class="flex items-center">
+                                    <div class="flex-1 bg-orange-100 rounded-full h-4">
+                                        <div class="bg-orange-500 h-4 rounded-full" style="width: 25%"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm">Sports Club (12)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="flex-1 bg-pink-100 rounded-full h-4">
+                                        <div class="bg-pink-500 h-4 rounded-full" style="width: 20%"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm">Music Club (10)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="flex-1 bg-green-100 rounded-full h-4">
+                                        <div class="bg-green-500 h-4 rounded-full" style="width: 20%"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm">Art Society (10)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -717,9 +1160,9 @@
                             </div>
                         </div>
                         <div class="flex items-center p-3 bg-gray-50 rounded-lg">
-                            <span class="text-xl mr-3">➕</span>
+                            <span class="text-xl mr-3">🏘️</span>
                             <div class="flex-1">
-                                <p class="text-sm">New event 'Art Exhibition' created by admin</p>
+                                <p class="text-sm">New community 'Data Science Club' created by admin</p>
                                 <p class="text-xs text-gray-500">15 minutes ago</p>
                             </div>
                         </div>
@@ -731,6 +1174,60 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div id="page-profile" class="page-content d-none">
+                <div class="mb-4">
+                    <button class="btn btn-outline-primary" onclick="showPage('home')">← Back</button>
+                </div>
+                <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
+                    <h2 class="text-xl font-bold mb-6">My Profile</h2>
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-2xl mx-auto">
+                            A
+                        </div>
+                        <h3 class="mt-3 font-bold">Admin User</h3>
+                        <p class="text-gray-500">admin@eventhub.com</p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-3">My Communities</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white">T</div>
+                                <div class="ml-3 flex-1">
+                                    <p class="font-medium">Tech Community</p>
+                                    <p class="text-xs text-gray-500">Admin</p>
+                                </div>
+                                <button class="btn btn-sm btn-primary" onclick="showPage('community-detail')">View</button>
+                            </div>
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white">S</div>
+                                <div class="ml-3 flex-1">
+                                    <p class="font-medium">Sports Club</p>
+                                    <p class="text-xs text-gray-500">Member</p>
+                                </div>
+                                <button class="btn btn-sm btn-primary" onclick="showPage('community-detail')">View</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-3">My Registrations</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">T</div>
+                                <div class="ml-3 flex-1">
+                                    <p class="font-medium">Tech Workshop 2024</p>
+                                    <p class="text-xs text-gray-500">May 15, 2024</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-warning w-full">Edit Profile</button>
                 </div>
             </div>
         </div>

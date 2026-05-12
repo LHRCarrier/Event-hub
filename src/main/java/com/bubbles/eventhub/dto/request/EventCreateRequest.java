@@ -38,6 +38,11 @@ public class EventCreateRequest {
      */
     private Integer categoryId;
 
+    /**
+     * 社区ID
+     */
+    private Integer communityId;
+
     public EventCreateRequest() {}
 
     public String getName() {
@@ -78,5 +83,13 @@ public class EventCreateRequest {
 
     public void setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public Integer getCommunityId() {
+        return communityId;
+    }
+
+    public void setCommunityId(Integer communityId) {
+        this.communityId = communityId;
     }
 }

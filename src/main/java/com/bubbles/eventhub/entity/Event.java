@@ -45,6 +45,11 @@ public class Event {
     private Integer categoryId;
 
     /**
+     * 社区ID，外键关联communities表
+     */
+    private Integer communityId;
+
+    /**
      * 事件状态，如：UPCOMING（即将到来）、PAST（已结束）
      */
     private String status;
@@ -107,6 +112,14 @@ public class Event {
 
     public void setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public Integer getCommunityId() {
+        return communityId;
+    }
+
+    public void setCommunityId(Integer communityId) {
+        this.communityId = communityId;
     }
 
     public String getStatus() {

@@ -1,6 +1,6 @@
 <div id="page-create-event" class="page-content d-none">
     <div class="mb-4">
-        <button class="btn btn-outline-primary" onclick="showPage('events')">← Back</button>
+        <button class="btn btn-outline-primary" onclick="showPage('events')"><i class="fas fa-arrow-left"></i> Back</button>
     </div>
     <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
         <h2 class="text-xl font-bold mb-6">Create New Event</h2>

@@ -31,6 +31,11 @@ public class EventUpdateRequest {
      */
     private Integer categoryId;
 
+    /**
+     * 社区ID
+     */
+    private Integer communityId;
+
     public EventUpdateRequest() {}
 
     public String getName() {
@@ -71,5 +76,13 @@ public class EventUpdateRequest {
 
     public void setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public Integer getCommunityId() {
+        return communityId;
+    }
+
+    public void setCommunityId(Integer communityId) {
+        this.communityId = communityId;
     }
 }

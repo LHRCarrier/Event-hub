@@ -3,29 +3,29 @@
     <div class="row mb-6" id="dashboardStats">
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📊</div>
-                <div class="text-2xl font-bold text-gray-800" id="dbTotalRegistrations">156</div>
+                <div class="text-3xl mb-2"><i class="fas fa-clipboard-list text-primary"></i></div>
+                <div class="text-2xl font-bold text-gray-800" id="dbTotalRegistrations">0</div>
                 <div class="text-sm text-gray-500">Total Registrations</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📅</div>
-                <div class="text-2xl font-bold text-gray-800" id="dbTotalEvents">48</div>
+                <div class="text-3xl mb-2"><i class="fas fa-calendar-alt text-success"></i></div>
+                <div class="text-2xl font-bold text-gray-800" id="dbTotalEvents">0</div>
                 <div class="text-sm text-gray-500">Total Events</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">👤</div>
-                <div class="text-2xl font-bold text-gray-800" id="dbTotalUsers">128</div>
+                <div class="text-3xl mb-2"><i class="fas fa-users text-info"></i></div>
+                <div class="text-2xl font-bold text-gray-800" id="dbTotalUsers">0</div>
                 <div class="text-sm text-gray-500">Total Users</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📈</div>
-                <div class="text-2xl font-bold text-green-600">+24%</div>
+                <div class="text-3xl mb-2"><i class="fas fa-chart-line text-warning"></i></div>
+                <div class="text-2xl font-bold text-green-600">0</div>
                 <div class="text-sm text-gray-500">Growth Rate</div>
             </div>
         </div>
