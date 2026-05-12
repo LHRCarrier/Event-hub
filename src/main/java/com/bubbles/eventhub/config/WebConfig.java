@@ -97,12 +97,14 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**")
             .addResourceLocations("/static/");
+
         registry.addResourceHandler("/swagger-ui/**")
-            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/5.17.14/");
+            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/5.17.14/")
+            .setCachePeriod(3600);
+
         registry.addResourceHandler("/webjars/**")
-            .addResourceLocations("classpath:/META-INF/resources/webjars/");
-        registry.addResourceHandler("/api-docs/**")
-            .addResourceLocations("classpath:/META-INF/resources/");
+            .addResourceLocations("classpath:/META-INF/resources/webjars/")
+            .setCachePeriod(3600);
     }
 
     /**
@@ -110,7 +112,7 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/swagger-ui.html")
-            .setViewName("forward:/swagger-ui/index.html");
+        registry.addRedirectViewController("/swagger-ui.html", "/swagger-ui/index.html");
+        registry.addRedirectViewController("/doc.html", "/swagger-ui/index.html");
     }
 }

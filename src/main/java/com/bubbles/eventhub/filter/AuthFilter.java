@@ -107,10 +107,11 @@ public class AuthFilter implements Filter {
             || path.startsWith("/static/")
             || path.startsWith("/swagger-ui/")
             || path.startsWith("/api-docs/")
-            || path.startsWith("/v3/api-docs/")
+            || path.startsWith("/v3/api-docs")
             || path.equals("/swagger-ui.html")
             || path.equals("/doc.html")
-            || path.startsWith("/knife4j/");
+            || path.startsWith("/knife4j/")
+            || path.startsWith("/webjars/");
     }
 
     /**

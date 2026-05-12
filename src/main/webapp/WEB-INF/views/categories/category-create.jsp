@@ -1,6 +1,6 @@
 <div id="page-create-category" class="page-content d-none">
     <div class="mb-4">
-        <button class="btn btn-outline-primary" onclick="showPage('categories')">← Back</button>
+        <button class="btn btn-outline-primary" onclick="showPage('categories')"><i class="fas fa-arrow-left"></i> Back</button>
     </div>
     <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
         <h2 class="text-xl font-bold mb-6">Create New Category</h2>

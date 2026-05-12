@@ -43,6 +43,16 @@ public class EventResponse {
     private String categoryName;
 
     /**
+     * 社区ID
+     */
+    private Integer communityId;
+
+    /**
+     * 社区名称
+     */
+    private String communityName;
+
+    /**
      * 事件状态
      */
     private String status;
@@ -113,6 +123,22 @@ public class EventResponse {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Integer getCommunityId() {
+        return communityId;
+    }
+
+    public void setCommunityId(Integer communityId) {
+        this.communityId = communityId;
+    }
+
+    public String getCommunityName() {
+        return communityName;
+    }
+
+    public void setCommunityName(String communityName) {
+        this.communityName = communityName;
     }
 
     public String getStatus() {
