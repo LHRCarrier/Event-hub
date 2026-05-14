@@ -55,4 +55,11 @@ public interface UserService {
      * @return 系统中活跃用户的数量
      */
     int getActiveUsers();
+
+    /**
+     * 根据用户ID获取用户角色
+     * @param userId 用户ID
+     * @return 用户角色（ADMIN 或 USER）
+     */
+    String getUserRole(Integer userId);
 }

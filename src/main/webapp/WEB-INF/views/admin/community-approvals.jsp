@@ -1,0 +1,32 @@
+<div id="page-community-approvals" class="page-content d-none">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Community Creation Approvals</h2>
+    </div>
+
+    <div class="d-flex gap-2 mb-4" id="approvalTabs">
+        <button class="btn btn-sm btn-primary active" onclick="selectApprovalTab('PENDING')">Pending</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="selectApprovalTab('APPROVED')">Approved</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="selectApprovalTab('REJECTED')">Rejected</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Community Name</th>
+                    <th>Description</th>
+                    <th>Applicant</th>
+                    <th>Apply Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="communityCreationApplicationsTableBody">
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation" class="p-4">
+            <ul class="pagination justify-content-center" id="communityCreationApplicationsPagination">
+            </ul>
+        </nav>
+    </div>
+</div>

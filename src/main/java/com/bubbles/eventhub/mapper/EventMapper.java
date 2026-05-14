@@ -55,4 +55,10 @@ public interface EventMapper extends BaseMapper<Event> {
      */
     @Select("SELECT COUNT(*) FROM registrations WHERE event_id = #{eventId}")
     int countParticipants(@Param("eventId") Integer eventId);
+
+    @Select("SELECT * FROM events WHERE community_id = #{communityId} ORDER BY date DESC")
+    List<Event> findByCommunityId(@Param("communityId") Integer communityId);
+
+    @Select("SELECT * FROM events WHERE community_id = #{communityId} AND status = #{status} ORDER BY date DESC")
+    List<Event> findByCommunityIdAndStatus(@Param("communityId") Integer communityId, @Param("status") String status);
 }

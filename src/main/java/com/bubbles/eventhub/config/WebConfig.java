@@ -1,5 +1,6 @@
 package com.bubbles.eventhub.config;
 
+import com.bubbles.eventhub.interceptor.CommunityPermissionInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -29,6 +31,12 @@ import java.util.List;
 @EnableWebMvc
 @ComponentScan(basePackages = {"com.bubbles.eventhub.controller", "com.bubbles.eventhub.service", "com.bubbles.eventhub.mapper", "com.bubbles.eventhub.util"})
 public class WebConfig implements WebMvcConfigurer {
+
+    private final CommunityPermissionInterceptor communityPermissionInterceptor;
+
+    public WebConfig(CommunityPermissionInterceptor communityPermissionInterceptor) {
+        this.communityPermissionInterceptor = communityPermissionInterceptor;
+    }
 
     /**
      * 配置ObjectMapper
@@ -114,5 +122,14 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addRedirectViewController("/swagger-ui.html", "/swagger-ui/index.html");
         registry.addRedirectViewController("/doc.html", "/swagger-ui/index.html");
+    }
+
+    /**
+     * 配置拦截器
+     */
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(communityPermissionInterceptor)
+                .addPathPatterns("/api/c/**");
     }
 }

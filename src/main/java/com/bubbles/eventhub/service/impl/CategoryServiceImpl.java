@@ -132,6 +132,31 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
+     * 获取社区关联的分类列表
+     * @param communityId 社区ID
+     * @return 社区关联的分类列表
+     */
+    @Override
+    public List<CategoryResponse> getCategoriesByCommunity(Integer communityId) {
+        List<Category> categories = categoryMapper.selectList(null);
+        return categories.stream()
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 创建社区专属分类
+     * @param communityId 社区ID
+     * @param request 分类创建请求
+     * @return 创建的分类信息
+     */
+    @Override
+    @Transactional
+    public CategoryResponse createCommunityCategory(Integer communityId, CategoryCreateRequest request) {
+        return createCategory(request);
+    }
+
+    /**
      * 将Category实体转换为CategoryResponse
      * @param category 分类实体
      * @return 分类响应对象，包含事件数量

@@ -66,6 +66,12 @@ public class EventServiceImpl implements EventService {
         return getEventById(event.getEventId());
     }
 
+    @Override
+    @Transactional
+    public EventResponse createEvent(EventCreateRequest request, Integer userId) {
+        return createEvent(request);
+    }
+
     /**
      * 分页获取事件列表
      * 特殊说明：每次调用会自动更新过期事件的状态（UPCOMING -> PAST）
@@ -172,6 +178,12 @@ public class EventServiceImpl implements EventService {
         eventMapper.updateById(event);
     }
 
+    @Override
+    @Transactional
+    public void updateEvent(Integer eventId, EventUpdateRequest request, Integer userId) {
+        updateEvent(eventId, request);
+    }
+
     /**
      * 删除事件
      * @param eventId 要删除的事件ID
@@ -184,6 +196,12 @@ public class EventServiceImpl implements EventService {
             throw new BusinessException(404, "事件不存在");
         }
         eventMapper.deleteById(eventId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteEvent(Integer eventId, Integer userId) {
+        deleteEvent(eventId);
     }
 
     /**
@@ -231,6 +249,32 @@ public class EventServiceImpl implements EventService {
     @Override
     public int getUpcomingEvents() {
         return eventMapper.findByStatus("UPCOMING").size();
+    }
+
+    @Override
+    public PageResponse<EventResponse> getEventsByCommunity(Integer communityId, int page, int size) {
+        updateEventStatus();
+        
+        List<Event> events = eventMapper.findByCommunityId(communityId);
+        int total = events.size();
+        int offset = (page - 1) * size;
+
+        List<EventResponse> responses = events.stream()
+            .skip(offset)
+            .limit(size)
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
+
+        return new PageResponse<>(responses, total, page, size);
+    }
+
+    @Override
+    public List<EventResponse> getUpcomingEventsByCommunity(Integer communityId) {
+        updateEventStatus();
+        
+        return eventMapper.findByCommunityIdAndStatus(communityId, "UPCOMING").stream()
+            .map(this::convertToResponse)
+            .collect(Collectors.toList());
     }
 
     /**

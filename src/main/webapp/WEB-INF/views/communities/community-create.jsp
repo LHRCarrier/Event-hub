@@ -1,0 +1,33 @@
+<div id="page-create-community" class="page-content d-none">
+    <div class="mb-4">
+        <button class="btn btn-outline-primary" onclick="showPage('communities')">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </button>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto shadow-sm">
+        <h2 class="text-xl font-bold mb-6">Create New Community</h2>
+
+        <form id="createCommunityForm">
+            <div class="mb-4">
+                <label class="form-label font-medium">Community Name *</label>
+                <input type="text" class="form-control" id="communityName" required placeholder="Enter community name">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label font-medium">Description</label>
+                <textarea class="form-control" id="communityDescription" rows="4" placeholder="Enter community description"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label font-medium">Logo URL (Optional)</label>
+                <input type="text" class="form-control" id="communityLogo" placeholder="Enter logo URL">
+            </div>
+
+            <div class="d-flex gap-3">
+                <button type="button" class="btn btn-secondary" onclick="showPage('communities')">Cancel</button>
+                <button type="submit" class="btn btn-primary ms-auto">Create Community</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -24,6 +24,10 @@ public class Community {
     
     private String status;
     
+    private Boolean requireApproval;
+    
+    private Integer creatorId;
+    
     private Date createTime;
     
     private Date updateTime;
@@ -68,6 +72,22 @@ public class Community {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Boolean getRequireApproval() {
+        return requireApproval;
+    }
+
+    public void setRequireApproval(Boolean requireApproval) {
+        this.requireApproval = requireApproval;
+    }
+
+    public Integer getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Integer creatorId) {
+        this.creatorId = creatorId;
     }
 
     public Date getCreateTime() {

@@ -10,6 +10,7 @@ import com.bubbles.eventhub.exception.BusinessException;
 import com.bubbles.eventhub.mapper.CommunityMapper;
 import com.bubbles.eventhub.mapper.CommunityMemberMapper;
 import com.bubbles.eventhub.mapper.UserMapper;
+import com.bubbles.eventhub.service.CommunityApplicationService;
 import com.bubbles.eventhub.service.CommunityMemberService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,13 +30,16 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
     private final CommunityMemberMapper communityMemberMapper;
     private final CommunityMapper communityMapper;
     private final UserMapper userMapper;
+    private final CommunityApplicationService applicationService;
 
     public CommunityMemberServiceImpl(CommunityMemberMapper communityMemberMapper,
                                      CommunityMapper communityMapper,
-                                     UserMapper userMapper) {
+                                     UserMapper userMapper,
+                                     CommunityApplicationService applicationService) {
         this.communityMemberMapper = communityMemberMapper;
         this.communityMapper = communityMapper;
         this.userMapper = userMapper;
+        this.applicationService = applicationService;
     }
 
     @Override
@@ -198,6 +202,25 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
         queryWrapper.eq(CommunityMember::getUserId, userId);
         queryWrapper.eq(CommunityMember::getStatus, "ACTIVE");
         return communityMemberMapper.selectCount(queryWrapper).intValue();
+    }
+
+    @Override
+    public List<CommunityMemberResponse> getRecentMembers(Integer communityId, int limit) {
+        LambdaQueryWrapper<CommunityMember> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CommunityMember::getCommunityId, communityId);
+        queryWrapper.eq(CommunityMember::getStatus, "ACTIVE");
+        queryWrapper.orderByDesc(CommunityMember::getJoinTime);
+        
+        List<CommunityMember> members = communityMemberMapper.selectList(queryWrapper);
+        return members.stream()
+                .limit(limit)
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    @Override
+    public int countPendingApplications(Integer communityId) {
+        return applicationService.countPendingApplications(communityId);
     }
 
     private CommunityMemberResponse convertToResponse(CommunityMember member) {

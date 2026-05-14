@@ -20,6 +20,8 @@
             --sidebar-bg: #1a237e;
             --sidebar-active: #3949ab;
             --bg-color: #f5f7fa;
+            --community-color: #673ab7;
+            --community-light: #b39ddb;
         }
         body {
             background-color: var(--bg-color);
@@ -103,6 +105,39 @@
             background-color: #ffcdd2;
             color: #c62828;
         }
+        .badge-admin {
+            background-color: #e1bee7;
+            color: #6a1b9a;
+        }
+        .badge-member {
+            background-color: #bbdefb;
+            color: #1565c0;
+        }
+        .community-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 4px solid var(--community-color);
+        }
+        .community-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .community-banner {
+            height: 100px;
+            background: linear-gradient(135deg, var(--community-color), #9575cd);
+        }
+        .btn-community {
+            background-color: var(--community-color) !important;
+            border: none;
+            border-radius: 8px;
+            color: white;
+        }
+        .btn-community:hover {
+            background-color: #5e35b1 !important;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -142,6 +177,9 @@
                 <a class="nav-link active" href="#home" onclick="showPage('home')">
                     <i class="fas fa-home"></i> Home
                 </a>
+                <a class="nav-link" href="#communities" onclick="showPage('communities')">
+                    <i class="fas fa-users"></i> Communities
+                </a>
                 <a class="nav-link" href="#events" onclick="showPage('events')">
                     <i class="fas fa-calendar"></i> Events
                 </a>
@@ -157,11 +195,30 @@
                 <a class="nav-link" href="#dashboard" onclick="showPage('dashboard')">
                     <i class="fas fa-chart-line"></i> Dashboard
                 </a>
+                <div class="border-top border-white/10 my-2"></div>
+                <a class="nav-link" href="#applications" onclick="showPage('applications')">
+                    <i class="fas fa-file-clipboard"></i> Applications
+                </a>
+                <a class="nav-link" href="#community-approvals" onclick="showPage('community-approvals')">
+                    <i class="fas fa-check-circle"></i> Approvals
+                </a>
+                <a class="nav-link" href="#profile" onclick="showPage('profile')">
+                    <i class="fas fa-user-circle"></i> Profile
+                </a>
             </nav>
         </div>
 
         <div class="col-10 content p-4">
             <%@ include file="/WEB-INF/views/home/home.jsp" %>
+            <%@ include file="/WEB-INF/views/home/home-new.jsp" %>
+            <%@ include file="/WEB-INF/views/communities/communities-list.jsp" %>
+            <%@ include file="/WEB-INF/views/communities/community-detail.jsp" %>
+            <%@ include file="/WEB-INF/views/communities/community-create.jsp" %>
+            <%@ include file="/WEB-INF/views/communities/community-members.jsp" %>
+            <%@ include file="/WEB-INF/views/communities/community-home.jsp" %>
+            <%@ include file="/WEB-INF/views/communities/community-dashboard.jsp" %>
+            <%@ include file="/WEB-INF/views/applications/applications.jsp" %>
+            <%@ include file="/WEB-INF/views/admin/community-approvals.jsp" %>
             <%@ include file="/WEB-INF/views/events/events-list.jsp" %>
             <%@ include file="/WEB-INF/views/events/event-detail.jsp" %>
             <%@ include file="/WEB-INF/views/events/event-create.jsp" %>
@@ -182,6 +239,8 @@
     <script src="static/js/api/api-utils.js"></script>
     <script src="static/js/api/users-api.js"></script>
     <script src="static/js/api/categories-api.js"></script>
+    <script src="static/js/api/communities-api.js"></script>
+    <script src="static/js/api/community-applications-api.js"></script>
     <script src="static/js/api/events-api.js"></script>
     <script src="static/js/api/registrations-api.js"></script>
     <script src="static/js/api/dashboard-api.js"></script>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bubbles.eventhub.mapper.CommunityApplicationMapper">
+
+    <select id="selectPageByUserId" resultType="com.bubbles.eventhub.entity.CommunityApplication">
+        SELECT * FROM community_applications 
+        WHERE user_id = #{userId} 
+        ORDER BY apply_time DESC
+    </select>
+
+    <select id="selectPageByCommunityAndStatus" resultType="com.bubbles.eventhub.entity.CommunityApplication">
+        SELECT * FROM community_applications 
+        WHERE community_id = #{communityId} 
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY apply_time DESC
+    </select>
+
+</mapper>

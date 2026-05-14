@@ -1,5 +1,7 @@
 package com.bubbles.eventhub.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -44,5 +46,17 @@ public class AppConfig {
         dataSource.setUsername(environment.getProperty("jdbc.username"));
         dataSource.setPassword(environment.getProperty("jdbc.password"));
         return dataSource;
+    }
+
+    /**
+     * 配置Jackson ObjectMapper
+     * 放置在根上下文中，以便拦截器等Bean可以访问
+     * @return ObjectMapper对象
+     */
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
     }
 }

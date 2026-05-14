@@ -21,6 +21,8 @@ public interface EventService {
      */
     EventResponse createEvent(EventCreateRequest request);
 
+    EventResponse createEvent(EventCreateRequest request, Integer userId);
+
     /**
      * 分页获取事件列表
      * 支持按关键字、分类ID和状态筛选
@@ -49,12 +51,16 @@ public interface EventService {
      */
     void updateEvent(Integer eventId, EventUpdateRequest request);
 
+    void updateEvent(Integer eventId, EventUpdateRequest request, Integer userId);
+
     /**
      * 删除事件
      * @param eventId 要删除的事件ID
      * @throws BusinessException 事件不存在时抛出异常
      */
     void deleteEvent(Integer eventId);
+
+    void deleteEvent(Integer eventId, Integer userId);
 
     /**
      * 搜索事件
@@ -78,4 +84,8 @@ public interface EventService {
      * @return 状态为UPCOMING的事件数量
      */
     int getUpcomingEvents();
+
+    PageResponse<EventResponse> getEventsByCommunity(Integer communityId, int page, int size);
+
+    List<EventResponse> getUpcomingEventsByCommunity(Integer communityId);
 }

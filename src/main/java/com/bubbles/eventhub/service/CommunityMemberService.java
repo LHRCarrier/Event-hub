@@ -30,4 +30,8 @@ public interface CommunityMemberService {
     List<CommunityResponse> getUserCommunities(Integer userId);
 
     int countUserCommunities(Integer userId);
+
+    List<CommunityMemberResponse> getRecentMembers(Integer communityId, int limit);
+
+    int countPendingApplications(Integer communityId);
 }

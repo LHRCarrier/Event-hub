@@ -134,6 +134,17 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 根据用户ID获取用户角色
+     * @param userId 用户ID
+     * @return 用户角色（ADMIN 或 USER）
+     */
+    @Override
+    public String getUserRole(Integer userId) {
+        User user = userMapper.selectById(userId);
+        return user != null ? user.getRole() : null;
+    }
+
+    /**
      * 将User实体转换为UserResponse
      * @param user 用户实体
      * @return 用户响应对象（不含密码信息）

@@ -53,4 +53,19 @@ public interface CategoryService {
      * @return 系统中分类的总数量
      */
     int getTotalCategories();
+
+    /**
+     * 获取社区关联的分类列表
+     * @param communityId 社区ID
+     * @return 社区关联的分类列表
+     */
+    List<CategoryResponse> getCategoriesByCommunity(Integer communityId);
+
+    /**
+     * 创建社区专属分类
+     * @param communityId 社区ID
+     * @param request 分类创建请求
+     * @return 创建的分类信息
+     */
+    CategoryResponse createCommunityCategory(Integer communityId, CategoryCreateRequest request);
 }

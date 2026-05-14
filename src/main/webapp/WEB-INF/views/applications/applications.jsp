@@ -1,0 +1,65 @@
+<div id="page-applications" class="page-content d-none">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>My Applications</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="d-flex justify-content-between mb-4">
+                    <h3>Community Join Applications</h3>
+                </div>
+                <div id="joinApplicationsList">
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="text-4xl mb-3">📋</div>
+                        <p>No join applications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="d-flex justify-content-between mb-4">
+                    <h3>Community Creation Applications</h3>
+                </div>
+                <div id="createApplicationsList">
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="text-4xl mb-3">📝</div>
+                        <p>No creation applications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6" id="adminApplicationsSection" style="display: none;">
+        <h3 class="mb-4">Admin - Community Applications</h3>
+        <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="d-flex gap-2 mb-4">
+                <button class="btn btn-sm btn-primary active" onclick="loadAdminApplications('PENDING')">Pending</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadAdminApplications('APPROVED')">Approved</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadAdminApplications('REJECTED')">Rejected</button>
+            </div>
+            <div id="adminApplicationsTableContainer">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Community</th>
+                            <th>Applicant</th>
+                            <th>Apply Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminApplicationsTableBody">
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center" id="adminApplicationsPagination">
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>

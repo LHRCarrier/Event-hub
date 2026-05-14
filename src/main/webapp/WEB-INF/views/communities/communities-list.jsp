@@ -1,0 +1,25 @@
+<div id="page-communities" class="page-content d-none">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Communities</h2>
+        <button class="btn btn-primary" onclick="showPage('create-community')">
+            <i class="fas fa-plus me-2"></i>Create Community
+        </button>
+    </div>
+
+    <div class="mb-4">
+        <div class="input-group" style="max-width: 500px;">
+            <input type="text" class="form-control" placeholder="Search communities..." id="communitySearchInput">
+            <button class="btn btn-outline-primary" type="button" onclick="searchCommunities()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="row" id="communitiesList">
+    </div>
+
+    <nav class="mt-4" aria-label="Page navigation">
+        <ul class="pagination justify-content-center" id="communitiesPagination">
+        </ul>
+    </nav>
+</div>

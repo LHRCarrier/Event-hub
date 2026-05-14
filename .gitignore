@@ -42,3 +42,11 @@ frontend/node_modules/
 ### AI
 .trae
 .env
+### TEST
+test_api.ps1
+test_api2.ps1
+test_api3.ps1
+test_deployment.ps1
+test_register.ps1
+### 文档
+评审v1.md
