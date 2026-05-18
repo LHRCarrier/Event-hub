@@ -309,6 +309,19 @@ async function viewEvent(eventId) {
     const result = await EventsAPI.getEvent(eventId);
     if (result.code === 200) {
         const event = result.data;
+        
+        let isRegistered = false;
+        if (currentUser) {
+            const registerResult = await RegistrationsAPI.checkRegistration(eventId, currentUser.userId);
+            if (registerResult.code === 200) {
+                isRegistered = registerResult.data;
+            }
+        }
+        
+        const registerButton = isRegistered 
+            ? `<button class="btn btn-success ms-auto" disabled><i class="fas fa-check-circle"></i> 已注册</button>`
+            : `<button class="btn btn-primary ms-auto" onclick="registerForEvent(${event.eventId})"><i class="fas fa-calendar-plus"></i> Register Now</button>`;
+        
         const detail = document.getElementById('eventDetail');
         detail.innerHTML = `
             <div class="event-banner p-6">
@@ -345,7 +358,7 @@ async function viewEvent(eventId) {
                 <div class="d-flex gap-3">
                         <button class="btn btn-warning" onclick="editEvent(${event.eventId})">Edit Event</button>
                         <button class="btn btn-danger" onclick="deleteEvent(${event.eventId})">Delete Event</button>
-                        <button class="btn btn-primary ms-auto" onclick="registerForEvent(${event.eventId})">Register Now</button>
+                        ${registerButton}
                     </div>
             </div>
         `;
@@ -617,7 +630,147 @@ async function loadProfile() {
         document.getElementById('profileEmail').value = user.email || '';
         document.getElementById('profilePhone').value = user.phone || '';
         document.getElementById('profileRealName').value = user.realName || '';
+        
+        loadAvatar(user.avatarUrl, user.username);
     }
+}
+
+function loadAvatar(avatarUrl, username) {
+    const avatarImage = document.getElementById('avatarImage');
+    const avatarInitial = document.getElementById('avatarInitial');
+    
+    if (avatarUrl && avatarUrl.trim()) {
+        avatarImage.src = avatarUrl;
+        avatarImage.style.display = 'block';
+        avatarInitial.style.display = 'none';
+    } else {
+        avatarImage.style.display = 'none';
+        avatarInitial.style.display = 'block';
+        avatarInitial.textContent = (username || 'U').charAt(0).toUpperCase();
+    }
+}
+
+let selectedAvatarFile = null;
+
+function initAvatarUpload() {
+    const avatarContainer = document.getElementById('avatarContainer');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+    
+    avatarContainer.addEventListener('click', () => {
+        avatarFileInput.click();
+    });
+    
+    avatarContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        avatarContainer.classList.add('border-dashed', 'border-2', 'border-primary');
+    });
+    
+    avatarContainer.addEventListener('dragleave', () => {
+        avatarContainer.classList.remove('border-dashed', 'border-2', 'border-primary');
+    });
+    
+    avatarContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        avatarContainer.classList.remove('border-dashed', 'border-2', 'border-primary');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleAvatarFile(files[0]);
+        }
+    });
+    
+    avatarFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            handleAvatarFile(file);
+        }
+    });
+    
+    confirmUploadBtn.addEventListener('click', () => {
+        uploadAvatar();
+    });
+}
+
+function handleAvatarFile(file) {
+    const maxSize = 2 * 1024 * 1024;
+    
+    if (!file.type.startsWith('image/')) {
+        showAvatarStatus('Please select an image file (JPG/PNG)', 'error');
+        return;
+    }
+    
+    if (!file.type.includes('jpeg') && !file.type.includes('png')) {
+        showAvatarStatus('Only JPG and PNG formats are supported', 'error');
+        return;
+    }
+    
+    if (file.size > maxSize) {
+        showAvatarStatus('File size exceeds 2MB limit', 'error');
+        return;
+    }
+    
+    selectedAvatarFile = file;
+    
+    const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('previewFileName').textContent = `File: ${file.name}`;
+            document.getElementById('previewFileSize').textContent = `Size: ${formatFileSize(file.size)}`;
+            const modalElement = document.getElementById('avatarPreviewModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        };
+        reader.readAsDataURL(file);
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function showAvatarStatus(message, type = 'info') {
+    const statusElement = document.getElementById('avatarUploadStatus');
+    statusElement.textContent = message;
+    
+    if (type === 'error') {
+        statusElement.className = 'mt-2 text-sm text-red-500';
+    } else if (type === 'success') {
+        statusElement.className = 'mt-2 text-sm text-green-500';
+    } else if (type === 'loading') {
+        statusElement.className = 'mt-2 text-sm text-blue-500';
+    } else {
+        statusElement.className = 'mt-2 text-sm text-gray-500';
+    }
+    
+    if (type !== 'loading') {
+        setTimeout(() => {
+            statusElement.textContent = '';
+        }, 3000);
+    }
+}
+
+async function uploadAvatar() {
+    if (!selectedAvatarFile || !currentUser) return;
+    
+    showAvatarStatus('Uploading...', 'loading');
+    const modalElement = document.getElementById('avatarPreviewModal');
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) {
+        modal.hide();
+    }
+    
+    const result = await UsersAPI.uploadAvatar(currentUser.userId, selectedAvatarFile);
+    
+    if (result.code === 200) {
+        showAvatarStatus('Avatar uploaded successfully!', 'success');
+        loadAvatar(result.data.avatarUrl, currentUser.username);
+    } else {
+        showAvatarStatus(result.message || 'Upload failed', 'error');
+    }
+    
+    selectedAvatarFile = null;
 }
 
 async function handleUpdateProfile(e) {
@@ -1353,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('createEventForm')?.addEventListener('submit', handleCreateEvent);
     document.getElementById('createCategoryForm')?.addEventListener('submit', handleCreateCategory);
     document.getElementById('profileForm')?.addEventListener('submit', handleUpdateProfile);
+    initAvatarUpload();
     document.getElementById('createCommunityForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
         createCommunity();

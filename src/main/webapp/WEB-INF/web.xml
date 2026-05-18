@@ -13,7 +13,7 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>com.bubbles.eventhub.config.AppConfig</param-value>
+        <param-value>com.bubbles.server.config.AppConfig</param-value>
     </context-param>
 
     <listener>
@@ -29,7 +29,7 @@
         </init-param>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>com.bubbles.eventhub.config.WebConfig</param-value>
+            <param-value>com.bubbles.server.config.WebConfig</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
@@ -59,16 +59,21 @@
             <param-name>targetBeanName</param-name>
             <param-value>authFilter</param-value>
         </init-param>
+        <async-supported>true</async-supported>
     </filter>
 
     <filter-mapping>
         <filter-name>encodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
 
     <filter-mapping>
         <filter-name>authFilter</filter-name>
         <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
 
 <!--    <error-page>-->

@@ -24,5 +24,24 @@ const UsersAPI = {
         return await fetchApi(`/users/${userId}/enable`, {
             method: 'POST'
         });
+    },
+    
+    async uploadAvatar(userId, file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const options = {
+            method: 'POST',
+            body: formData,
+            headers: {}
+        };
+        
+        return await fetchApi(`/avatar/upload/${userId}`, options);
+    },
+    
+    async deleteAvatar(userId) {
+        return await fetchApi(`/avatar/${userId}`, {
+            method: 'DELETE'
+        });
     }
 };

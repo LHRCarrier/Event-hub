@@ -2,13 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.bubbles.eventhub.mapper.CommunityMemberMapper">
+<mapper namespace="com.bubbles.server.mapper.CommunityMemberMapper">
 
     <sql id="baseColumns">
-        member_id, community_id, user_id, role, status, source, apply_time, approve_time, approved_by, join_time
+        member_id, community_id, user_id, role, status, source, apply_time, approve_time, approved_by, join_time, remark
     </sql>
 
-    <select id="selectByCommunityId" resultType="com.bubbles.eventhub.entity.CommunityMember">
+    <select id="selectByCommunityId" resultType="com.bubbles.pojo.entity.CommunityMember">
         SELECT <include refid="baseColumns"/>
         FROM community_members
         WHERE community_id = #{communityId}
@@ -16,7 +16,7 @@
         ORDER BY join_time DESC
     </select>
 
-    <select id="selectByUserId" resultType="com.bubbles.eventhub.entity.CommunityMember">
+    <select id="selectByUserId" resultType="com.bubbles.pojo.entity.CommunityMember">
         SELECT <include refid="baseColumns"/>
         FROM community_members
         WHERE user_id = #{userId}
@@ -24,7 +24,7 @@
         ORDER BY join_time DESC
     </select>
 
-    <select id="selectByCommunityAndUser" resultType="com.bubbles.eventhub.entity.CommunityMember">
+    <select id="selectByCommunityAndUser" resultType="com.bubbles.pojo.entity.CommunityMember">
         SELECT <include refid="baseColumns"/>
         FROM community_members
         WHERE community_id = #{communityId}
@@ -52,7 +52,7 @@
         WHERE member_id = #{memberId}
     </update>
 
-    <select id="selectPageByCommunity" resultType="com.bubbles.eventhub.entity.CommunityMember">
+    <select id="selectPageByCommunity" resultType="com.bubbles.pojo.entity.CommunityMember">
         SELECT <include refid="baseColumns"/>
         FROM community_members
         WHERE community_id = #{communityId}

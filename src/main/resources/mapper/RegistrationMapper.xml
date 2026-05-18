@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bubbles.eventhub.mapper.RegistrationMapper">
+<mapper namespace="com.bubbles.server.mapper.RegistrationMapper">
 
-    <resultMap id="RegistrationResultMap" type="com.bubbles.eventhub.entity.Registration">
+    <resultMap id="RegistrationResultMap" type="com.bubbles.pojo.entity.Registration">
         <id column="registration_id" property="registrationId" />
         <result column="event_id" property="eventId" />
         <result column="user_id" property="userId" />
         <result column="status" property="status" />
+        <result column="source" property="source" />
+        <result column="checkin_code" property="checkinCode" />
+        <result column="checkin_time" property="checkinTime" />
+        <result column="cancel_time" property="cancelTime" />
+        <result column="cancel_reason" property="cancelReason" />
+        <result column="remark" property="remark" />
         <result column="register_time" property="registerTime" />
     </resultMap>
 
-    <resultMap id="RegistrationWithEventResultMap" type="com.bubbles.eventhub.entity.Registration" extends="RegistrationResultMap">
+    <resultMap id="RegistrationWithEventResultMap" type="com.bubbles.pojo.entity.Registration" extends="RegistrationResultMap">
         <result column="event_name" property="eventName" />
         <result column="event_date" property="eventDate" />
     </resultMap>
 
-    <resultMap id="RegistrationWithUserResultMap" type="com.bubbles.eventhub.entity.Registration" extends="RegistrationResultMap">
+    <resultMap id="RegistrationWithUserResultMap" type="com.bubbles.pojo.entity.Registration" extends="RegistrationResultMap">
         <result column="username" property="username" />
         <result column="email" property="email" />
     </resultMap>

@@ -18,5 +18,9 @@ const RegistrationsAPI = {
         return await fetchApi(`/registrations/${registrationId}`, {
             method: 'DELETE'
         });
+    },
+    
+    async checkRegistration(eventId, userId) {
+        return await fetchApi(`/registrations/check?eventId=${eventId}&userId=${userId}`);
     }
 };

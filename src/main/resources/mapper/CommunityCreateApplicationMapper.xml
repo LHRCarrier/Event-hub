@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bubbles.eventhub.mapper.CommunityCreateApplicationMapper">
+<mapper namespace="com.bubbles.server.mapper.CommunityCreateApplicationMapper">
     <sql id="baseColumns">application_id, name, description, logo_url, applicant_id, status, apply_time, approve_time, approve_by, reject_reason</sql>
-    <select id="selectByApplicantId" resultType="com.bubbles.eventhub.entity.CommunityCreateApplication">
+    <select id="selectByApplicantId" resultType="com.bubbles.pojo.entity.CommunityCreateApplication">
         SELECT <include refid="baseColumns"/> FROM community_create_applications WHERE applicant_id = #{applicantId} ORDER BY apply_time DESC
     </select>
-    <select id="selectByStatus" resultType="com.bubbles.eventhub.entity.CommunityCreateApplication">
+    <select id="selectByStatus" resultType="com.bubbles.pojo.entity.CommunityCreateApplication">
         SELECT <include refid="baseColumns"/> FROM community_create_applications WHERE status = #{status} ORDER BY apply_time DESC
     </select>
     <select id="countByName" resultType="java.lang.Integer">
         SELECT COUNT(*) FROM community_create_applications WHERE name = #{name}
     </select>
-    <select id="selectPage" resultType="com.bubbles.eventhub.entity.CommunityCreateApplication">
+    <select id="selectPage" resultType="com.bubbles.pojo.entity.CommunityCreateApplication">
         SELECT <include refid="baseColumns"/> FROM community_create_applications
         <where><if test="status != null and status != ''">status = #{status}</if></where>
         ORDER BY apply_time DESC

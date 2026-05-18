@@ -14,10 +14,14 @@ function setToken(token) {
 
 async function fetchApi(url, options = {}) {
     const defaultOptions = {
-        headers: {
-            'Content-Type': 'application/json',
-        }
+        headers: {}
     };
+    
+    // 如果不是 FormData，才设置默认 Content-Type
+    if (!options.body || !(options.body instanceof FormData)) {
+        defaultOptions.headers['Content-Type'] = 'application/json';
+    }
+    
     if (currentToken) {
         defaultOptions.headers['Authorization'] = 'Bearer ' + currentToken;
     }

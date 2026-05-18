@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bubbles.eventhub.mapper.CategoryMapper">
+<mapper namespace="com.bubbles.server.mapper.CategoryMapper">
 
     <sql id="baseColumns">
-        category_id, name, description, create_time
+        category_id, name, description, parent_id, sort_order, icon_url, color, create_time
     </sql>
 
-    <resultMap id="CategoryResultMap" type="com.bubbles.eventhub.entity.Category">
+    <resultMap id="CategoryResultMap" type="com.bubbles.pojo.entity.Category">
         <id column="category_id" property="categoryId" />
         <result column="name" property="name" />
         <result column="description" property="description" />
+        <result column="parent_id" property="parentId" />
+        <result column="sort_order" property="sortOrder" />
+        <result column="icon_url" property="iconUrl" />
+        <result column="color" property="color" />
         <result column="create_time" property="createTime" />
     </resultMap>
 
@@ -48,19 +52,6 @@
         ORDER BY create_time DESC
     </select>
 
-    <update id="updateById">
-        UPDATE categories
-        <set>
-            <if test="name != null">name = #{name},</if>
-            <if test="description != null">description = #{description},</if>
-            <if test="status != null">status = #{status},</if>
-            update_time = NOW()
-        </set>
-        WHERE category_id = #{categoryId}
-    </update>
-
-    <delete id="deleteById">
-        DELETE FROM categories WHERE category_id = #{categoryId}
-    </delete>
+    
 
 </mapper>
