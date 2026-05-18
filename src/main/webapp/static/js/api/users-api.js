@@ -14,9 +14,15 @@ const UsersAPI = {
         });
     },
     
-    async deleteUser(userId) {
-        return await fetchApi(`/users/${userId}`, {
-            method: 'DELETE'
+    async disableUser(userId) {
+        return await fetchApi(`/users/${userId}/disable`, {
+            method: 'POST'
+        });
+    },
+    
+    async enableUser(userId) {
+        return await fetchApi(`/users/${userId}/enable`, {
+            method: 'POST'
         });
     }
 };

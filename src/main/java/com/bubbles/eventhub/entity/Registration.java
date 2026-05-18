@@ -39,6 +39,26 @@ public class Registration {
      */
     private Date registerTime;
 
+    /**
+     * 事件名称（扩展属性，用于关联查询）
+     */
+    private String eventName;
+
+    /**
+     * 事件日期（扩展属性，用于关联查询）
+     */
+    private Date eventDate;
+
+    /**
+     * 用户名（扩展属性，用于关联查询）
+     */
+    private String username;
+
+    /**
+     * 用户邮箱（扩展属性，用于关联查询）
+     */
+    private String email;
+
     public Registration() {}
 
     public Integer getRegistrationId() {
@@ -79,5 +99,37 @@ public class Registration {
 
     public void setRegisterTime(Date registerTime) {
         this.registerTime = registerTime;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public Date getEventDate() {
+        return eventDate;
+    }
+
+    public void setEventDate(Date eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

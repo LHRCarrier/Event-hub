@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bubbles.eventhub.mapper.CommunityMapper">
+
+    <sql id="baseColumns">
+        community_id, name, description, logo_url, require_approval, creator_id, status, create_time, update_time
+    </sql>
+
+    <select id="selectActiveCommunities" resultType="com.bubbles.eventhub.entity.Community">
+        SELECT <include refid="baseColumns"/>
+        FROM communities
+        WHERE status = 'ACTIVE'
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="searchCommunities" resultType="com.bubbles.eventhub.entity.Community">
+        SELECT <include refid="baseColumns"/>
+        FROM communities
+        <where>
+            status = 'ACTIVE'
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectById" resultType="com.bubbles.eventhub.entity.Community">
+        SELECT <include refid="baseColumns"/>
+        FROM communities
+        WHERE community_id = #{communityId}
+    </select>
+
+    <update id="updateById">
+        UPDATE communities
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="logoUrl != null">logo_url = #{logoUrl},</if>
+            <if test="requireApproval != null">require_approval = #{requireApproval},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE community_id = #{communityId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM communities WHERE community_id = #{communityId}
+    </delete>
+
+</mapper>

@@ -438,15 +438,19 @@ async function loadUsers(page) {
         
         result.data.list.forEach(user => {
             const row = document.createElement('tr');
+            const statusColor = (user.status || 'ACTIVE') === 'DISABLED' ? 'badge-danger' : 'badge-success';
+            const actionBtn = (user.status || 'ACTIVE') === 'DISABLED' 
+                ? `<button class="btn btn-sm btn-success ms-2" onclick="enableUser(${user.userId})">Enable</button>` 
+                : `<button class="btn btn-sm btn-danger ms-2" onclick="disableUser(${user.userId})">Disable</button>`;
             row.innerHTML = `
                 <td>${user.username}</td>
                 <td>${user.email}</td>
                 <td>${user.role}</td>
-                <td><span class="badge badge-success">${user.status || 'ACTIVE'}</span></td>
+                <td><span class="badge ${statusColor}">${user.status || 'ACTIVE'}</span></td>
                 <td>
                     <button class="btn btn-sm btn-primary">View</button>
                     <button class="btn btn-sm btn-warning ms-2">Edit</button>
-                    <button class="btn btn-sm btn-danger ms-2" onclick="deleteUser(${user.userId})">Delete</button>
+                    ${actionBtn}
                 </td>
             `;
             tbody.appendChild(row);
@@ -456,12 +460,24 @@ async function loadUsers(page) {
     }
 }
 
-async function deleteUser(userId) {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+async function disableUser(userId) {
+    if (!confirm('Are you sure you want to disable this user?')) return;
     
-    const result = await UsersAPI.deleteUser(userId);
+    const result = await UsersAPI.disableUser(userId);
     if (result.code === 200) {
-        alert('User deleted successfully');
+        alert('User disabled successfully');
+        loadUsers(1);
+    } else {
+        alert(result.message);
+    }
+}
+
+async function enableUser(userId) {
+    if (!confirm('Are you sure you want to enable this user?')) return;
+    
+    const result = await UsersAPI.enableUser(userId);
+    if (result.code === 200) {
+        alert('User enabled successfully');
         loadUsers(1);
     } else {
         alert(result.message);

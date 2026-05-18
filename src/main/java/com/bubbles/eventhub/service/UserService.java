@@ -37,11 +37,18 @@ public interface UserService {
     void updateUser(Integer userId, UpdateUserRequest request);
 
     /**
-     * 删除用户
-     * @param userId 要删除的用户ID
+     * 禁用用户（逻辑删除）
+     * @param userId 要禁用的用户ID
      * @throws BusinessException 用户不存在时抛出异常
      */
-    void deleteUser(Integer userId);
+    void disableUser(Integer userId);
+
+    /**
+     * 启用用户
+     * @param userId 要启用的用户ID
+     * @throws BusinessException 用户不存在时抛出异常
+     */
+    void enableUser(Integer userId);
 
     /**
      * 获取用户总数

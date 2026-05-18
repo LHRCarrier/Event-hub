@@ -41,11 +41,10 @@ public interface EventMapper extends BaseMapper<Event> {
     List<Event> searchByName(@Param("keyword") String keyword);
 
     /**
-     * 查询所有事件
+     * 查询所有事件（包含分类名称）
      * 按事件日期降序排列
-     * @return 所有事件列表
+     * @return 所有事件列表（包含分类名称）
      */
-    @Select("SELECT * FROM events ORDER BY date DESC")
     List<Event> findAllWithCategory();
 
     /**

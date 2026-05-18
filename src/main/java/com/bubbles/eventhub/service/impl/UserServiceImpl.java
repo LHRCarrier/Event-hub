@@ -101,17 +101,37 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 删除用户
-     * @param userId 要删除的用户ID
+     * 禁用用户（逻辑删除）
+     * 将用户状态设置为禁用，而不是物理删除
+     * @param userId 要禁用的用户ID
      * @throws BusinessException 用户不存在时抛出异常
      */
     @Override
     @Transactional
-    public void deleteUser(Integer userId) {
-        if (userMapper.selectById(userId) == null) {
+    public void disableUser(Integer userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
             throw new BusinessException(404, "用户不存在");
         }
-        userMapper.deleteById(userId);
+        user.setStatus("DISABLED");
+        userMapper.updateById(user);
+    }
+
+    /**
+     * 启用用户
+     * 将用户状态设置为活跃
+     * @param userId 要启用的用户ID
+     * @throws BusinessException 用户不存在时抛出异常
+     */
+    @Override
+    @Transactional
+    public void enableUser(Integer userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+        user.setStatus("ACTIVE");
+        userMapper.updateById(user);
     }
 
     /**

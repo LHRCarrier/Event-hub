@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.eventhub.mapper.RegistrationMapper">
+<mapper namespace="com.bubbles.eventhub.mapper.RegistrationMapper">
 
     <resultMap id="RegistrationResultMap" type="com.bubbles.eventhub.entity.Registration">
         <id column="registration_id" property="registrationId" />

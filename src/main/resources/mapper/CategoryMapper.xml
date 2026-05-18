@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.eventhub.mapper.CategoryMapper">
+<mapper namespace="com.bubbles.eventhub.mapper.CategoryMapper">
+
+    <sql id="baseColumns">
+        category_id, name, description, create_time
+    </sql>
 
     <resultMap id="CategoryResultMap" type="com.bubbles.eventhub.entity.Category">
         <id column="category_id" property="categoryId" />
@@ -8,5 +12,55 @@
         <result column="description" property="description" />
         <result column="create_time" property="createTime" />
     </resultMap>
+
+    <select id="findAll" resultMap="CategoryResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM categories
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findById" resultMap="CategoryResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM categories
+        WHERE category_id = #{categoryId}
+    </select>
+
+    <select id="findByName" resultMap="CategoryResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM categories
+        WHERE name = #{name}
+    </select>
+
+    <select id="findByRole" resultMap="CategoryResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM categories
+        <where>
+            <choose>
+                <when test="role == 'ADMIN'">
+                    <!-- 管理员可以看到所有分类 -->
+                </when>
+                <otherwise>
+                    <!-- 普通用户只看到启用的分类 -->
+                    AND status = 'ACTIVE'
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <update id="updateById">
+        UPDATE categories
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM categories WHERE category_id = #{categoryId}
+    </delete>
 
 </mapper>

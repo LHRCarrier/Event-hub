@@ -72,16 +72,30 @@ public class UserController {
     }
 
     /**
-     * 删除用户
-     * @param userId 要删除的用户ID
-     * @return 删除成功返回空响应
+     * 禁用用户
+     * @param userId 要禁用的用户ID
+     * @return 禁用成功返回空响应
      * @throws BusinessException 用户不存在时抛出异常
      */
-    @DeleteMapping("/{userId}")
-    @Operation(summary = "删除用户", description = "删除指定用户")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(
+    @PostMapping("/{userId}/disable")
+    @Operation(summary = "禁用用户", description = "禁用指定用户（逻辑删除）")
+    public ResponseEntity<ApiResponse<Void>> disableUser(
             @Parameter(description = "用户ID", required = true) @PathVariable(name = "userId") Integer userId) {
-        userService.deleteUser(userId);
-        return ResponseEntity.ok(ApiResponse.success("删除成功", null));
+        userService.disableUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("禁用成功", null));
+    }
+
+    /**
+     * 启用用户
+     * @param userId 要启用的用户ID
+     * @return 启用成功返回空响应
+     * @throws BusinessException 用户不存在时抛出异常
+     */
+    @PostMapping("/{userId}/enable")
+    @Operation(summary = "启用用户", description = "启用指定用户")
+    public ResponseEntity<ApiResponse<Void>> enableUser(
+            @Parameter(description = "用户ID", required = true) @PathVariable(name = "userId") Integer userId) {
+        userService.enableUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("启用成功", null));
     }
 }

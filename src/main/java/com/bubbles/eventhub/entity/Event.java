@@ -64,6 +64,11 @@ public class Event {
      */
     private Date updateTime;
 
+    /**
+     * 分类名称（扩展属性，用于关联查询）
+     */
+    private String categoryName;
+
     public Event() {}
 
     public Integer getEventId() {
@@ -144,5 +149,13 @@ public class Event {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }
