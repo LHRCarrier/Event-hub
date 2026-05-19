@@ -32,8 +32,7 @@ const UsersAPI = {
         
         const options = {
             method: 'POST',
-            body: formData,
-            headers: {}
+            body: formData
         };
         
         return await fetchApi(`/avatar/upload/${userId}`, options);

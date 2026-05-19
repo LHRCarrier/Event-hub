@@ -12,10 +12,12 @@ function initAuth() {
             currentUser = {
                 userId: userData.userId,
                 username: userData.username,
-                role: userData.role
+                role: userData.role,
+                avatarUrl: userData.avatarUrl
             };
             setToken(userData.token);
             document.getElementById('currentUsername').textContent = currentUser.username;
+            updateHeaderAvatar(currentUser.avatarUrl, currentUser.username);
         } catch (e) {
             clearAuth();
         }
@@ -632,6 +634,23 @@ async function loadProfile() {
         document.getElementById('profileRealName').value = user.realName || '';
         
         loadAvatar(user.avatarUrl, user.username);
+        
+        if (user.avatarUrl) {
+            updateHeaderAvatar(user.avatarUrl, user.username);
+            if (currentUser) {
+                currentUser.avatarUrl = user.avatarUrl;
+                const savedUser = localStorage.getItem('eventhub_user') || sessionStorage.getItem('eventhub_user');
+                if (savedUser) {
+                    const userData = JSON.parse(savedUser);
+                    userData.avatarUrl = user.avatarUrl;
+                    if (localStorage.getItem('eventhub_user')) {
+                        localStorage.setItem('eventhub_user', JSON.stringify(userData));
+                    } else {
+                        sessionStorage.setItem('eventhub_user', JSON.stringify(userData));
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -647,6 +666,21 @@ function loadAvatar(avatarUrl, username) {
         avatarImage.style.display = 'none';
         avatarInitial.style.display = 'block';
         avatarInitial.textContent = (username || 'U').charAt(0).toUpperCase();
+    }
+}
+
+function updateHeaderAvatar(avatarUrl, username) {
+    const headerAvatar = document.getElementById('headerAvatar');
+    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
+    
+    if (avatarUrl && avatarUrl.trim()) {
+        headerAvatar.src = avatarUrl;
+        headerAvatar.style.display = 'block';
+        headerAvatarInitial.style.display = 'none';
+    } else {
+        headerAvatar.style.display = 'none';
+        headerAvatarInitial.style.display = 'flex';
+        headerAvatarInitial.textContent = (username || 'U').charAt(0).toUpperCase();
     }
 }
 
@@ -765,7 +799,21 @@ async function uploadAvatar() {
     
     if (result.code === 200) {
         showAvatarStatus('Avatar uploaded successfully!', 'success');
-        loadAvatar(result.data.avatarUrl, currentUser.username);
+        const newAvatarUrl = result.data.avatarUrl;
+        loadAvatar(newAvatarUrl, currentUser.username);
+        updateHeaderAvatar(newAvatarUrl, currentUser.username);
+        
+        currentUser.avatarUrl = newAvatarUrl;
+        const savedUser = localStorage.getItem('eventhub_user') || sessionStorage.getItem('eventhub_user');
+        if (savedUser) {
+            const userData = JSON.parse(savedUser);
+            userData.avatarUrl = newAvatarUrl;
+            if (localStorage.getItem('eventhub_user')) {
+                localStorage.setItem('eventhub_user', JSON.stringify(userData));
+            } else {
+                sessionStorage.setItem('eventhub_user', JSON.stringify(userData));
+            }
+        }
     } else {
         showAvatarStatus(result.message || 'Upload failed', 'error');
     }

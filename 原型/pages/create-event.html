@@ -1,0 +1,32 @@
+<div class="mb-4">
+    <button class="btn btn-outline-primary" onclick="showPage('events')"><i class="fas fa-arrow-left"></i> Back</button>
+</div>
+<div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
+    <h2 class="text-xl font-bold mb-6">Create New Event</h2>
+    <form id="createEventForm">
+        <div class="mb-4">
+            <label class="form-label font-medium">Event Name</label>
+            <input type="text" class="form-control" id="eventName" placeholder="Enter event name">
+        </div>
+        <div class="mb-4">
+            <label class="form-label font-medium">Event Date</label>
+            <input type="datetime-local" class="form-control" id="eventDate">
+        </div>
+        <div class="mb-4">
+            <label class="form-label font-medium">Location</label>
+            <input type="text" class="form-control" id="eventLocation" placeholder="Enter location">
+        </div>
+        <div class="mb-4">
+            <label class="form-label font-medium">Category</label>
+            <select class="form-control" id="eventCategory"></select>
+        </div>
+        <div class="mb-4">
+            <label class="form-label font-medium">Description</label>
+            <textarea class="form-control" rows="4" id="eventDescription" placeholder="Enter event description"></textarea>
+        </div>
+        <div class="d-flex gap-3">
+            <button type="button" class="btn btn-secondary" onclick="showPage('events')">Cancel</button>
+            <button type="submit" class="btn btn-primary ms-auto">Create Event</button>
+        </div>
+    </form>
+</div>

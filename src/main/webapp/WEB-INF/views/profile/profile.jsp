@@ -6,9 +6,9 @@
                 <div id="avatarContainer" class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto cursor-pointer overflow-hidden border-4 border-white shadow-lg hover:shadow-xl transition-shadow">
                     <img id="avatarImage" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none;">
                     <span id="avatarInitial" class="text-white text-3xl font-bold">U</span>
-                </div>
-                <div class="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-dark transition-colors shadow-md">
-                    <i class="fas fa-camera text-white text-sm"></i>
+                    <div id="cameraOverlay" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <i class="fas fa-camera text-white text-2xl"></i>
+                    </div>
                 </div>
                 <input type="file" id="avatarFileInput" accept="image/jpeg,image/png" class="d-none">
                 <p class="text-sm text-gray-500 mt-2">Click to upload or drag image</p>

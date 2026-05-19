@@ -154,8 +154,10 @@
                     </button>
                 </div>
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle me-2"></i> <span id="currentUsername">Admin</span>
+                    <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                        <img id="headerAvatar" src="" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; display: none;">
+                        <span id="headerAvatarInitial" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">U</span>
+                        <span id="currentUsername">Admin</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#profile" onclick="showPage('profile')">Profile</a></li>
