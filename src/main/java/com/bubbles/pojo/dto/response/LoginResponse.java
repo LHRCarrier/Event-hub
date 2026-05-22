@@ -25,13 +25,27 @@ public class LoginResponse {
      */
     private String token;
 
+    /**
+     * 用户头像URL
+     */
+    private String avatarUrl;
+
     public LoginResponse() {}
 
-    public LoginResponse(Integer userId, String username, String role, String token) {
+    public LoginResponse(Integer userId, String username, String role, String token, String avatarUrl) {
         this.userId = userId;
         this.username = username;
         this.role = role;
         this.token = token;
+        this.avatarUrl = avatarUrl;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Integer getUserId() {

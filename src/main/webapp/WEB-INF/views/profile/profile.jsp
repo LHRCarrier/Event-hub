@@ -3,10 +3,10 @@
     <div class="bg-white rounded-xl p-6 max-w-2xl mx-auto">
         <div class="text-center mb-6">
             <div class="relative inline-block">
-                <div id="avatarContainer" class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto cursor-pointer overflow-hidden border-4 border-white shadow-lg hover:shadow-xl transition-shadow">
+                <div id="avatarContainer" class="w-24 h-24 rounded-full mx-auto cursor-pointer overflow-hidden border-4 border-white shadow-lg" style="background: linear-gradient(135deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; transition: box-shadow 0.3s;">
                     <img id="avatarImage" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none;">
                     <span id="avatarInitial" class="text-white text-3xl font-bold">U</span>
-                    <div id="cameraOverlay" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <div id="cameraOverlay" class="absolute inset-0 bg-black flex items-center justify-center" style="opacity: 0; background-color: rgba(0, 0, 0, 0.5); transition: opacity 0.3s;">
                         <i class="fas fa-camera text-white text-2xl"></i>
                     </div>
                 </div>

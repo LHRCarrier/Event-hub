@@ -94,7 +94,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const API_BASE = '${pageContext.request.contextPath}/api';
+        const ctxPath = window.location.pathname.split('/')[1] || '';
+        const API_BASE = '/' + ctxPath;
         
         // Check if there's a redirect URL from server session
         <% if (redirectUrl != null) { %>
@@ -114,7 +115,7 @@
             const rememberMe = document.getElementById('rememberMe').checked;
 
             try {
-                const response = await fetch(API_BASE + '/auth/login', {
+                const response = await fetch(API_BASE + '/api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -126,11 +127,11 @@
 
                 if (result.code === 200) {
                     const userData = {
-
                         userId: result.data.userId,
                         username: result.data.username,
                         role: result.data.role,
-                        token: result.data.token
+                        token: result.data.token,
+                        avatarUrl: result.data.avatarUrl
                     };
                     console.log("用户登录数据:",userData)
 

@@ -54,8 +54,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getUserId(), user.getUsername(), user.getRole());
+        String avatarUrl = user.getAvatarUrl();
         logger.info("用户登录成功: userId={}, username={}, role={}", user.getUserId(), user.getUsername(), user.getRole());
-        return new LoginResponse(user.getUserId(), user.getUsername(), user.getRole(), token);
+        return new LoginResponse(user.getUserId(), user.getUsername(), user.getRole(), token, avatarUrl);
     }
 
     /**

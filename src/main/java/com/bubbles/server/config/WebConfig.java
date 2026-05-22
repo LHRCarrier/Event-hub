@@ -1,6 +1,7 @@
 package com.bubbles.server.config;
 
 import com.bubbles.server.interceptor.CommunityPermissionInterceptor;
+import com.bubbles.server.interceptor.RoleBasedInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
     private CommunityPermissionInterceptor communityPermissionInterceptor;
+
+    @Autowired
+    private RoleBasedInterceptor roleBasedInterceptor;
 
     /**
      * 配置ObjectMapper
@@ -129,6 +133,10 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 先注册角色权限拦截器，优先级更高
+        registry.addInterceptor(roleBasedInterceptor)
+                .addPathPatterns("/api/admin/**");
+                
         registry.addInterceptor(communityPermissionInterceptor)
                 .addPathPatterns("/api/c/**");
     }

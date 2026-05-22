@@ -1,5 +1,5 @@
 const DashboardAPI = {
     async getStats() {
-        return await fetchApi('/dashboard/stats');
+        return await fetchApi('/admin/dashboard/stats');
     }
 };
