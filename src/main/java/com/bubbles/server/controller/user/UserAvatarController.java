@@ -1,4 +1,4 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.user;
 
 import com.bubbles.pojo.dto.response.ApiResponse;
 import com.bubbles.pojo.entity.User;
@@ -21,15 +21,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/avatar")
-@Tag(name = "头像上传接口", description = "用户头像上传和管理相关接口")
-public class AvatarController {
+@Tag(name = "用户头像接口", description = "用户头像上传和管理相关接口")
+public class UserAvatarController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AvatarController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserAvatarController.class);
 
     private final OssUploadService ossUploadService;
     private final UserMapper userMapper;
 
-    public AvatarController(OssUploadService ossUploadService, UserMapper userMapper) {
+    public UserAvatarController(OssUploadService ossUploadService, UserMapper userMapper) {
         this.ossUploadService = ossUploadService;
         this.userMapper = userMapper;
     }

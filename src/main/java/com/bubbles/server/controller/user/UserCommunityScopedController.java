@@ -1,11 +1,10 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.user;
 
 import com.bubbles.pojo.dto.request.CategoryCreateRequest;
 import com.bubbles.pojo.dto.request.EventCreateRequest;
 import com.bubbles.pojo.dto.request.EventUpdateRequest;
 import com.bubbles.pojo.dto.response.ApiResponse;
 import com.bubbles.pojo.dto.response.CategoryResponse;
-import com.bubbles.pojo.dto.response.CommunityMemberResponse;
 import com.bubbles.pojo.dto.response.EventResponse;
 import com.bubbles.pojo.dto.response.PageResponse;
 import com.bubbles.pojo.dto.response.RegistrationResponse;
@@ -24,37 +23,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 社区级API控制器
- * 所有接口需要社区成员身份访问
- */
 @RestController
 @RequestMapping("/api/c/{communityId}")
-@Tag(name = "社区级API", description = "社区专属功能接口")
-public class CommunityScopedController {
+@Tag(name = "用户社区级接口", description = "社区专属功能接口")
+public class UserCommunityScopedController {
 
     private final CommunityService communityService;
     private final CommunityMemberService memberService;
     private final EventService eventService;
     private final RegistrationService registrationService;
-    private final CommunityPermissionService permissionService;
     private final CategoryService categoryService;
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    public CommunityScopedController(CommunityService communityService,
-                                   CommunityMemberService memberService,
-                                   EventService eventService,
-                                   RegistrationService registrationService,
-                                   CommunityPermissionService permissionService,
-                                   CategoryService categoryService,
-                                   UserService userService,
-                                   JwtUtil jwtUtil) {
+    public UserCommunityScopedController(CommunityService communityService,
+                                         CommunityMemberService memberService,
+                                         EventService eventService,
+                                         RegistrationService registrationService,
+                                         CategoryService categoryService,
+                                         UserService userService,
+                                         JwtUtil jwtUtil) {
         this.communityService = communityService;
         this.memberService = memberService;
         this.eventService = eventService;
         this.registrationService = registrationService;
-        this.permissionService = permissionService;
         this.categoryService = categoryService;
         this.userService = userService;
         this.jwtUtil = jwtUtil;
@@ -186,22 +178,6 @@ public class CommunityScopedController {
                 .toList();
 
         return ResponseEntity.ok(ApiResponse.success(registrations));
-    }
-
-    @GetMapping("/members")
-    @Operation(summary = "社区成员列表", description = "获取社区成员列表")
-    public ResponseEntity<ApiResponse<PageResponse<CommunityMemberResponse>>> getCommunityMembers(
-            @Parameter(description = "社区ID") @PathVariable(name = "communityId") Integer communityId,
-            @Parameter(description = "页码") @RequestParam(name = "page", defaultValue = "1") int page,
-            @Parameter(description = "每页数量") @RequestParam(name = "size", defaultValue = "10") int size,
-            HttpServletRequest httpRequest) {
-        Integer userId = getCurrentUserId(httpRequest);
-        if (!memberService.isMember(communityId, userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(403, "您不是该社区成员"));
-        }
-
-        PageResponse<CommunityMemberResponse> response = memberService.getCommunityMembers(communityId, page, size);
-        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/dashboard/stats")

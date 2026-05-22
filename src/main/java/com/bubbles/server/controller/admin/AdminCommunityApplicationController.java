@@ -1,4 +1,4 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.admin;
 
 import com.bubbles.pojo.dto.request.ApplicationApprovalRequest;
 import com.bubbles.pojo.dto.request.CommunityCreateApplicationRequest;
@@ -18,59 +18,36 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 社区创建申请控制器
- */
 @RestController
-@RequestMapping("/api/community-applications")
-@Tag(name = "社区创建申请接口", description = "社区创建申请的提交、审批等操作")
-public class CommunityCreateApplicationController {
+@RequestMapping("/api")
+@Tag(name = "社区创建申请接口", description = "社区创建申请的查询和审批操作")
+public class AdminCommunityApplicationController {
 
     private final CommunityCreateApplicationService applicationService;
     private final JwtUtil jwtUtil;
 
-    public CommunityCreateApplicationController(CommunityCreateApplicationService applicationService,
-                                              JwtUtil jwtUtil) {
+    public AdminCommunityApplicationController(CommunityCreateApplicationService applicationService,
+                                               JwtUtil jwtUtil) {
         this.applicationService = applicationService;
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping
-    @Operation(summary = "申请创建社区", description = "用户申请创建新社区")
-    public ResponseEntity<ApiResponse<CommunityCreateApplicationResponse>> applyToCreate(
-            @Valid @RequestBody CommunityCreateApplicationRequest request,
-            HttpServletRequest httpRequest) {
-        Integer userId = getCurrentUserId(httpRequest);
-        CommunityCreateApplicationResponse response = applicationService.applyToCreate(request, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created("申请已提交，请等待审批", response));
-    }
-
-    @GetMapping
-    @Operation(summary = "获取所有申请", description = "获取所有社区创建申请（仅系统管理员）")
+    @GetMapping("/admin/community-applications")
+    @Operation(summary = "获取所有申请", description = "获取所有社区创建申请，支持状态筛选（仅管理员）")
     public ResponseEntity<ApiResponse<PageResponse<CommunityCreateApplicationResponse>>> getAllApplications(
             @Parameter(description = "状态筛选") @RequestParam(name = "status", required = false) String status,
             @Parameter(description = "页码") @RequestParam(name = "page", defaultValue = "1") int page,
-            @Parameter(description = "每页数量") @RequestParam(name = "size", defaultValue = "10") int size,
-            HttpServletRequest httpRequest) {
-        Integer userId = getCurrentUserId(httpRequest);
-        String role = getCurrentUserRole(httpRequest);
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(403, "无权限查看申请"));
-        }
+            @Parameter(description = "每页数量") @RequestParam(name = "size", defaultValue = "10") int size) {
         PageResponse<CommunityCreateApplicationResponse> response = applicationService.getAllApplications(status, page, size);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @PutMapping("/{applicationId}")
-    @Operation(summary = "审批创建申请", description = "审批社区创建申请（仅系统管理员）")
+    @PutMapping("/admin/community-applications/{applicationId}")
+    @Operation(summary = "审批创建申请", description = "审批社区创建申请，批准或拒绝（仅管理员）")
     public ResponseEntity<ApiResponse<Void>> approveApplication(
             @Parameter(description = "申请ID") @PathVariable(name = "applicationId") Integer applicationId,
             @RequestBody ApplicationApprovalRequest request,
             HttpServletRequest httpRequest) {
-        String role = getCurrentUserRole(httpRequest);
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(403, "无权限审批申请"));
-        }
         Integer userId = getCurrentUserId(httpRequest);
 
         if ("APPROVED".equals(request.getStatus())) {
@@ -84,8 +61,8 @@ public class CommunityCreateApplicationController {
         return ResponseEntity.badRequest().body(ApiResponse.error(400, "无效的审批状态"));
     }
 
-    @GetMapping("/users/{userId}")
-    @Operation(summary = "获取我的创建申请", description = "获取用户提交的社区创建申请")
+    @GetMapping("/community-applications/users/{userId}")
+    @Operation(summary = "获取用户的社区创建申请", description = "获取用户提交的所有社区创建申请")
     public ResponseEntity<ApiResponse<List<CommunityCreateApplicationResponse>>> getUserApplications(
             @Parameter(description = "用户ID") @PathVariable(name = "userId") Integer userId,
             HttpServletRequest httpRequest) {
@@ -102,15 +79,6 @@ public class CommunityCreateApplicationController {
         if (authorization != null && authorization.startsWith("Bearer ")) {
             String token = authorization.substring(7);
             return jwtUtil.getUserIdFromToken(token);
-        }
-        return null;
-    }
-
-    private String getCurrentUserRole(HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            String token = authorization.substring(7);
-            return jwtUtil.getRoleFromToken(token);
         }
         return null;
     }

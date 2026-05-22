@@ -103,7 +103,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const API_BASE = '${pageContext.request.contextPath}/api';
+        const ctxPath = window.location.pathname.split('/')[1] || '';
+        const API_BASE = '/' + ctxPath;
 
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -134,7 +135,7 @@
             }
 
             try {
-                const response = await fetch(API_BASE + '/auth/register', {
+                const response = await fetch(API_BASE + '/api/auth/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

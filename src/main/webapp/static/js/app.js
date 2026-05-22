@@ -1,8 +1,18 @@
 let currentUser = null;
 let currentCommunityId = null;
+let charts = {};
+
+const WALLPAPERS = {
+    'linear': 'linear-gradient(to right, #1e88e5, #42a5f5)',
+    'gradient2': 'linear-gradient(to right, #a855f7, #ec4899)',
+    'gradient3': 'linear-gradient(to right, #14b8a6, #22d3ee)',
+    'gradient4': 'linear-gradient(to right, #f97316, #ef4444)',
+    'gradient5': 'linear-gradient(to right, #6366f1, #a855f7)',
+    'gradient6': 'linear-gradient(to right, #22c55e, #14b8a6)'
+};
 
 const PUBLIC_PAGES = ['login', 'register'];
-const PROTECTED_PAGES = ['home', 'home-new', 'events', 'registrations', 'users', 'categories', 'dashboard', 'profile', 'event-detail', 'create-event', 'create-category', 'communities', 'community-detail', 'create-community', 'community-members', 'community-home', 'community-dashboard', 'applications', 'community-approvals'];
+const PROTECTED_PAGES = ['home', 'home-new', 'events', 'registrations', 'users', 'categories', 'dashboard', 'profile', 'event-detail', 'create-event', 'create-category', 'communities', 'community-detail', 'create-community', 'community-members', 'community-home', 'community-dashboard', 'applications', 'community-approvals', 'settings'];
 
 function initAuth() {
     const savedUser = localStorage.getItem('eventhub_user') || sessionStorage.getItem('eventhub_user');
@@ -16,7 +26,10 @@ function initAuth() {
                 avatarUrl: userData.avatarUrl
             };
             setToken(userData.token);
-            document.getElementById('currentUsername').textContent = currentUser.username;
+            const menuUsername = document.getElementById('menuUsername');
+            if (menuUsername) {
+                menuUsername.textContent = currentUser.username;
+            }
             updateHeaderAvatar(currentUser.avatarUrl, currentUser.username);
         } catch (e) {
             clearAuth();
@@ -100,6 +113,8 @@ function showPage(pageName) {
         loadMyApplications();
     } else if (pageName === 'community-approvals') {
         loadCommunityCreationApplications('PENDING');
+    } else if (pageName === 'settings') {
+        initWallpaperSettings();
     }
 }
 
@@ -116,21 +131,13 @@ async function loadHomePage() {
 }
 
 async function loadHomeNewPage() {
-    const result = await fetchApi('/home');
-    if (result.code === 200) {
-        const data = result.data;
-        
-        if (data.stats) {
-            document.getElementById('statCommunities').textContent = data.stats.totalCommunities || 0;
-            document.getElementById('statTotalEvents').textContent = data.stats.totalEvents || 0;
-            document.getElementById('statParticipants').textContent = data.stats.totalParticipants || 0;
-            document.getElementById('statPendingApps').textContent = data.stats.pendingApplications || 0;
-        }
-        
-        loadMyCommunities();
-        loadMyApplicationsForHome();
-        loadHomeUpcomingEvents(data.upcomingEvents);
-    }
+    document.getElementById('statCommunities').textContent = '0';
+    document.getElementById('statTotalEvents').textContent = '0';
+    document.getElementById('statParticipants').textContent = '0';
+    document.getElementById('statPendingApps').textContent = '0';
+    
+    loadMyCommunities();
+    loadMyApplicationsForHome();
 }
 
 async function loadMyCommunities() {
@@ -557,35 +564,316 @@ async function handleCreateCategory(e) {
 async function loadDashboard() {
     const statsResult = await DashboardAPI.getStats();
     if (statsResult.code === 200) {
-        document.getElementById('dbTotalRegistrations').textContent = statsResult.data.totalRegistrations;
-        document.getElementById('dbTotalEvents').textContent = statsResult.data.totalEvents;
-        document.getElementById('dbTotalUsers').textContent = statsResult.data.totalUsers;
+        const data = statsResult.data;
+        document.getElementById('dbTotalRegistrations').textContent = formatNumber(data.totalRegistrations);
+        document.getElementById('dbTotalEvents').textContent = formatNumber(data.totalEvents);
+        document.getElementById('dbTotalUsers').textContent = formatNumber(data.totalUsers);
+        
+        const growthRate = calculateGrowthRate(data.totalRegistrations || 0, data.totalEvents || 0);
+        document.getElementById('dbGrowthRate').textContent = '+' + growthRate + '%';
     }
+    
+    initDashboardCharts();
     
     const activities = document.getElementById('recentActivities');
     activities.innerHTML = `
-        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
-            <span class="text-xl mr-3">📝</span>
-            <div class="flex-1">
-                <p class="text-sm">User 'john_smith' registered for 'Tech Workshop'</p>
-                <p class="text-xs text-gray-500">5 minutes ago</p>
+        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
+            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                <i class="fas fa-user-plus text-primary"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <p class="font-medium mb-0">New user registered</p>
+                <p class="text-sm text-gray-500 mb-0">John Doe joined EventHub</p>
+            </div>
+            <div class="flex-shrink-0 ml-3">
+                <span class="text-xs text-gray-400">2 minutes ago</span>
             </div>
         </div>
-        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
-            <span class="text-xl mr-3">➕</span>
-            <div class="flex-1">
-                <p class="text-sm">New event 'Art Exhibition' created by admin</p>
-                <p class="text-xs text-gray-500">15 minutes ago</p>
+        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
+            <div class="flex-shrink-0 w-10 h-10 bg-success/10 rounded-full flex items-center justify-center mr-3">
+                <i class="fas fa-calendar-plus text-success"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <p class="font-medium mb-0">New event created</p>
+                <p class="text-sm text-gray-500 mb-0">Tech Conference 2024</p>
+            </div>
+            <div class="flex-shrink-0 ml-3">
+                <span class="text-xs text-gray-400">15 minutes ago</span>
             </div>
         </div>
-        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
-            <span class="text-xl mr-3">👤</span>
-            <div class="flex-1">
-                <p class="text-sm">New user 'jane_doe' registered</p>
-                <p class="text-xs text-gray-500">30 minutes ago</p>
+        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
+            <div class="flex-shrink-0 w-10 h-10 bg-info/10 rounded-full flex items-center justify-center mr-3">
+                <i class="fas fa-file-check text-info"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <p class="font-medium mb-0">Registration approved</p>
+                <p class="text-sm text-gray-500 mb-0">Approved for Summer Festival</p>
+            </div>
+            <div class="flex-shrink-0 ml-3">
+                <span class="text-xs text-gray-400">30 minutes ago</span>
+            </div>
+        </div>
+        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
+            <div class="flex-shrink-0 w-10 h-10 bg-warning/10 rounded-full flex items-center justify-center mr-3">
+                <i class="fas fa-users text-warning"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <p class="font-medium mb-0">New community created</p>
+                <p class="text-sm text-gray-500 mb-0">Photography Club</p>
+            </div>
+            <div class="flex-shrink-0 ml-3">
+                <span class="text-xs text-gray-400">1 hour ago</span>
             </div>
         </div>
     `;
+}
+
+function formatNumber(num) {
+    if (!num) return '0';
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+}
+
+function calculateGrowthRate(registrations, events) {
+    return ((registrations / Math.max(events, 1)) * 10).toFixed(1);
+}
+
+function initDashboardCharts() {
+    initTrendChart();
+    initCategoryChart();
+    initCommunityChart();
+    initStatusChart();
+    
+    window.addEventListener('resize', function() {
+        Object.keys(charts).forEach(key => {
+            charts[key]?.resize();
+        });
+    });
+}
+
+function initTrendChart() {
+    const chartDom = document.getElementById('trendChart');
+    if (!chartDom) return;
+    
+    if (charts['trendChart']) {
+        charts['trendChart'].dispose();
+    }
+    
+    charts['trendChart'] = echarts.init(chartDom);
+    
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#e0e0e0',
+            textStyle: { color: '#333' }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            top: '10%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            axisLine: { lineStyle: { color: '#e0e0e0' } },
+            axisLabel: { color: '#666' }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { lineStyle: { color: '#e0e0e0' } },
+            axisLabel: { color: '#666' },
+            splitLine: { lineStyle: { color: '#f0f0f0' } }
+        },
+        series: [
+            {
+                name: 'Registrations',
+                type: 'line',
+                smooth: true,
+                data: [180, 220, 150, 320, 450, 580, 620, 550, 480, 380, 320, 410],
+                lineStyle: { color: '#4f46e5', width: 3 },
+                itemStyle: { color: '#4f46e5' },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(79, 70, 229, 0.3)' },
+                        { offset: 1, color: 'rgba(79, 70, 229, 0.05)' }
+                    ])
+                },
+                symbol: 'circle',
+                symbolSize: 6
+            }
+        ]
+    };
+    
+    charts['trendChart'].setOption(option);
+}
+
+function initCategoryChart() {
+    const chartDom = document.getElementById('categoryChart');
+    if (!chartDom) return;
+    
+    if (charts['categoryChart']) {
+        charts['categoryChart'].dispose();
+    }
+    
+    charts['categoryChart'] = echarts.init(chartDom);
+    
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#e0e0e0',
+            textStyle: { color: '#333' },
+            formatter: '{b}: {c} ({d}%)'
+        },
+        legend: {
+            orient: 'horizontal',
+            bottom: '5%',
+            textStyle: { color: '#666' }
+        },
+        series: [
+            {
+                name: 'Events',
+                type: 'pie',
+                radius: ['45%', '70%'],
+                center: ['50%', '45%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 8,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 18,
+                        fontWeight: 'bold'
+                    }
+                },
+                labelLine: { show: false },
+                data: [
+                    { value: 55, name: 'Technology', itemStyle: { color: '#4f46e5' } },
+                    { value: 38, name: 'Sports', itemStyle: { color: '#f97316' } },
+                    { value: 30, name: 'Cultural', itemStyle: { color: '#ec4899' } },
+                    { value: 25, name: 'Art', itemStyle: { color: '#22c55e' } },
+                    { value: 18, name: 'Business', itemStyle: { color: '#06b6d4' } },
+                    { value: 15, name: 'Education', itemStyle: { color: '#a855f7' } },
+                    { value: 12, name: 'Music', itemStyle: { color: '#f59e0b' } },
+                    { value: 8, name: 'Other', itemStyle: { color: '#6b7280' } }
+                ]
+            }
+        ]
+    };
+    
+    charts['categoryChart'].setOption(option);
+}
+
+function initCommunityChart() {
+    const chartDom = document.getElementById('communityChart');
+    if (!chartDom) return;
+    
+    if (charts['communityChart']) {
+        charts['communityChart'].dispose();
+    }
+    
+    charts['communityChart'] = echarts.init(chartDom);
+    
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#e0e0e0',
+            textStyle: { color: '#333' },
+            axisPointer: { type: 'shadow' }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            top: '10%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: ['Tech Club', 'Photography', 'Music', 'Sports', 'Book Club', 'Art'],
+            axisLine: { lineStyle: { color: '#e0e0e0' } },
+            axisLabel: { color: '#666', interval: 0, rotate: 15 }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { lineStyle: { color: '#e0e0e0' } },
+            axisLabel: { color: '#666' },
+            splitLine: { lineStyle: { color: '#f0f0f0' } }
+        },
+        series: [
+            {
+                name: 'Active Members',
+                type: 'bar',
+                barWidth: '50%',
+                data: [156, 89, 124, 145, 67, 78],
+                itemStyle: {
+                    borderRadius: [6, 6, 0, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#3b82f6' },
+                        { offset: 1, color: '#1d4ed8' }
+                    ])
+                }
+            }
+        ]
+    };
+    
+    charts['communityChart'].setOption(option);
+}
+
+function initStatusChart() {
+    const chartDom = document.getElementById('statusChart');
+    if (!chartDom) return;
+    
+    if (charts['statusChart']) {
+        charts['statusChart'].dispose();
+    }
+    
+    charts['statusChart'] = echarts.init(chartDom);
+    
+    const option = {
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#e0e0e0',
+            textStyle: { color: '#333' },
+            formatter: '{b}: {c} ({d}%)'
+        },
+        series: [
+            {
+                name: 'Status',
+                type: 'pie',
+                radius: '65%',
+                center: ['50%', '50%'],
+                label: {
+                    show: true,
+                    formatter: '{b}\n{c} ({d}%)',
+                    fontSize: 12
+                },
+                labelLine: { show: true },
+                data: [
+                    { value: 1850, name: 'Approved', itemStyle: { color: '#22c55e' } },
+                    { value: 620, name: 'Pending', itemStyle: { color: '#f59e0b' } },
+                    { value: 280, name: 'Cancelled', itemStyle: { color: '#ef4444' } },
+                    { value: 97, name: 'Rejected', itemStyle: { color: '#6b7280' } }
+                ]
+            }
+        ]
+    };
+    
+    charts['statusChart'].setOption(option);
 }
 
 async function loadRegistrations() {
@@ -671,16 +959,81 @@ function loadAvatar(avatarUrl, username) {
 
 function updateHeaderAvatar(avatarUrl, username) {
     const headerAvatar = document.getElementById('headerAvatar');
-    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
+    const previewAvatarImg = document.getElementById('previewAvatarImg');
+    const menuAvatar = document.getElementById('menuAvatar');
+    if (!headerAvatar) return;
     
+    let avatarSrc;
     if (avatarUrl && avatarUrl.trim()) {
-        headerAvatar.src = avatarUrl;
-        headerAvatar.style.display = 'block';
-        headerAvatarInitial.style.display = 'none';
+        avatarSrc = avatarUrl;
     } else {
-        headerAvatar.style.display = 'none';
-        headerAvatarInitial.style.display = 'flex';
-        headerAvatarInitial.textContent = (username || 'U').charAt(0).toUpperCase();
+        const initial = (username || 'U').charAt(0).toUpperCase();
+        avatarSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=random&size=64`;
+    }
+    
+    headerAvatar.src = avatarSrc;
+    if (previewAvatarImg) {
+        previewAvatarImg.src = avatarSrc;
+    }
+    if (menuAvatar) {
+        menuAvatar.src = avatarSrc;
+    }
+}
+
+function initUserMenu() {
+    const container = document.getElementById('userMenuContainer');
+    const avatarWrapper = document.getElementById('avatarWrapper');
+    const menu = document.getElementById('userMenu');
+    const headerAvatar = document.getElementById('headerAvatar');
+    
+    if (!container || !avatarWrapper || !menu || !headerAvatar) return;
+    
+    avatarWrapper.addEventListener('mouseenter', () => {
+        headerAvatar.style.transform = 'scale(1.1)';
+        menu.classList.remove('opacity-0', 'invisible');
+        menu.classList.add('opacity-100', 'visible');
+    });
+    
+    menu.addEventListener('mouseleave', () => {
+        headerAvatar.style.transform = 'scale(1)';
+        setTimeout(() => {
+            menu.classList.remove('opacity-100', 'visible');
+            menu.classList.add('opacity-0', 'invisible');
+        }, 150);
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        headerAvatar.style.transform = 'scale(1)';
+        setTimeout(() => {
+            const menuRect = menu.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const now = new Date();
+            const mouseX = window.lastMouseX || 0;
+            const mouseY = window.lastMouseY || 0;
+            if (!(mouseX >= menuRect.left && mouseX <= menuRect.right && mouseY >= menuRect.top && mouseY <= menuRect.bottom)) {
+                if (!(mouseX >= containerRect.left && mouseX <= containerRect.right && mouseY >= containerRect.top && mouseY <= containerRect.bottom)) {
+                    menu.classList.remove('opacity-100', 'visible');
+                    menu.classList.add('opacity-0', 'invisible');
+                }
+            }
+        }, 200);
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        window.lastMouseX = e.clientX;
+        window.lastMouseY = e.clientY;
+    });
+}
+
+function closeUserMenu() {
+    const menu = document.getElementById('userMenu');
+    const headerAvatar = document.getElementById('headerAvatar');
+    if (menu) {
+        menu.classList.remove('opacity-100', 'visible');
+        menu.classList.add('opacity-0', 'invisible');
+    }
+    if (headerAvatar) {
+        headerAvatar.style.transform = 'scale(1)';
     }
 }
 
@@ -1536,15 +1889,25 @@ async function editCommunity(communityId) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     setApiBase(window.API_BASE);
     initAuth();
+    initWallpaper();
+    initUserMenu();
     
     const savedUser = localStorage.getItem('eventhub_user') || sessionStorage.getItem('eventhub_user');
     if (!savedUser) {
         sessionStorage.setItem('redirect_url', window.redirectUrl);
         window.location.href = 'login.jsp';
         return;
+    }
+    
+    if (typeof PermissionInit !== 'undefined') {
+        await PermissionInit.initialize();
+    }
+    
+    if (typeof RouterGuard !== 'undefined') {
+        RouterGuard.updateNavigationUI();
     }
     
     const hash = window.location.hash.slice(1) || 'home';
@@ -1560,6 +1923,151 @@ document.addEventListener('DOMContentLoaded', () => {
         createCommunity();
     });
 });
+
+function initWallpaper() {
+    const savedWallpaper = localStorage.getItem('eventhub_wallpaper') || 'linear';
+    const savedWallpaperImage = localStorage.getItem('eventhub_wallpaper_image');
+    
+    if (savedWallpaperImage) {
+        setWallpaperImage(savedWallpaperImage);
+    } else {
+        setWallpaper(savedWallpaper);
+    }
+    
+    initWallpaperSettings();
+}
+
+function initWallpaperSettings() {
+    const uploadArea = document.getElementById('wallpaperUploadArea');
+    const fileInput = document.getElementById('wallpaperFileInput');
+    const resetBtn = document.getElementById('resetWallpaperBtn');
+    
+    if (!uploadArea || !fileInput) {
+        console.warn('Wallpaper upload elements not found');
+        return;
+    }
+    
+    uploadArea.onclick = function() {
+        console.log('Upload area clicked');
+        fileInput.click();
+    };
+    
+    uploadArea.ondragover = function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#1e88e5';
+        uploadArea.style.backgroundColor = '#f0f7ff';
+    };
+    
+    uploadArea.ondragleave = function() {
+        uploadArea.style.borderColor = '#dee2e6';
+        uploadArea.style.backgroundColor = '';
+    };
+    
+    uploadArea.ondrop = function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#dee2e6';
+        uploadArea.style.backgroundColor = '';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleWallpaperUpload(files[0]);
+        }
+    };
+    
+    fileInput.onchange = function(e) {
+        const file = e.target.files?.[0];
+        if (file) {
+            handleWallpaperUpload(file);
+        }
+    };
+    
+    const wallpaperItems = document.querySelectorAll('.wallpaper-item');
+    wallpaperItems.forEach(function(item) {
+        item.onclick = function() {
+            const wallpaperId = this.dataset.wallpaper;
+            if (!wallpaperId) {
+                console.warn('Wallpaper item missing data-wallpaper attribute');
+                return;
+            }
+            setWallpaper(wallpaperId);
+            localStorage.setItem('eventhub_wallpaper', wallpaperId);
+            localStorage.removeItem('eventhub_wallpaper_image');
+            updateWallpaperPreview();
+        };
+    });
+    
+    if (resetBtn) {
+        resetBtn.onclick = function() {
+            localStorage.removeItem('eventhub_wallpaper');
+            localStorage.removeItem('eventhub_wallpaper_image');
+            setWallpaper('linear');
+            updateWallpaperPreview();
+        };
+    }
+    
+    updateWallpaperPreview();
+}
+
+function setWallpaper(wallpaperId) {
+    const headerBanner = document.getElementById('headerBanner');
+    if (!headerBanner) return;
+    
+    const wallpaper = WALLPAPERS[wallpaperId];
+    if (wallpaper) {
+        headerBanner.style.backgroundImage = 'none';
+        headerBanner.style.background = wallpaper;
+    }
+}
+
+function setWallpaperImage(imageDataUrl) {
+    const headerBanner = document.getElementById('headerBanner');
+    if (!headerBanner) return;
+    
+    headerBanner.style.background = `url(${imageDataUrl})`;
+    headerBanner.style.backgroundSize = 'cover';
+    headerBanner.style.backgroundPosition = 'center';
+}
+
+function handleWallpaperUpload(file) {
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const imageDataUrl = e.target.result;
+        setWallpaperImage(imageDataUrl);
+        localStorage.setItem('eventhub_wallpaper_image', imageDataUrl);
+        localStorage.removeItem('eventhub_wallpaper');
+        updateWallpaperPreview();
+    };
+    reader.readAsDataURL(file);
+}
+
+function updateWallpaperPreview() {
+    const preview = document.getElementById('wallpaperPreview');
+    const previewContainer = document.getElementById('currentWallpaperPreview');
+    const resetBtn = document.getElementById('resetWallpaperBtn');
+    
+    if (!preview || !previewContainer) return;
+    
+    const savedImage = localStorage.getItem('eventhub_wallpaper_image');
+    const savedWallpaper = localStorage.getItem('eventhub_wallpaper');
+    
+    if (savedImage) {
+        preview.style.backgroundImage = `url(${savedImage})`;
+        preview.style.backgroundSize = 'cover';
+        preview.style.backgroundPosition = 'center';
+        preview.style.background = '';
+        previewContainer.style.display = 'block';
+    } else if (savedWallpaper) {
+        preview.style.background = WALLPAPERS[savedWallpaper] || WALLPAPERS['linear'];
+        preview.style.backgroundImage = 'none';
+        previewContainer.style.display = 'block';
+    } else {
+        previewContainer.style.display = 'none';
+    }
+}
 
 window.addEventListener('hashchange', () => {
     if (!isLoggedIn()) return;

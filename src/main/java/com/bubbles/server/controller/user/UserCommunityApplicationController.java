@@ -1,4 +1,4 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.user;
 
 import com.bubbles.pojo.dto.request.CommunityApplyRequest;
 import com.bubbles.pojo.dto.request.ApplicationApprovalRequest;
@@ -16,21 +16,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 社区加入申请控制器
- */
 @RestController
 @RequestMapping("/api/communities")
-@Tag(name = "社区申请接口", description = "社区加入申请的提交、审批等操作")
-public class CommunityApplicationController {
+@Tag(name = "用户社区申请接口", description = "社区加入申请的提交、审批等操作")
+public class UserCommunityApplicationController {
 
     private final CommunityApplicationService applicationService;
     private final CommunityMemberService memberService;
     private final JwtUtil jwtUtil;
 
-    public CommunityApplicationController(CommunityApplicationService applicationService,
-                                       CommunityMemberService memberService,
-                                       JwtUtil jwtUtil) {
+    public UserCommunityApplicationController(CommunityApplicationService applicationService,
+                                              CommunityMemberService memberService,
+                                              JwtUtil jwtUtil) {
         this.applicationService = applicationService;
         this.memberService = memberService;
         this.jwtUtil = jwtUtil;

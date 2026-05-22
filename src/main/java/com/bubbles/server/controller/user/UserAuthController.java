@@ -1,4 +1,4 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.user;
 
 import com.bubbles.pojo.dto.request.LoginRequest;
 import com.bubbles.pojo.dto.request.RegisterRequest;
@@ -18,23 +18,17 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "认证接口", description = "用户登录和注册相关接口")
-public class AuthController {
+@Tag(name = "用户认证接口", description = "用户登录和注册相关接口")
+public class UserAuthController {
 
     private final AuthService authService;
 
-    public AuthController(AuthService authService) {
+    public UserAuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    /**
-     * 用户登录接口
-     * @param request 登录请求参数，包含用户名和密码
-     * @return 登录成功返回用户信息和JWT令牌
-     * @throws BusinessException 用户名或密码错误时抛出异常
-     */
     @PostMapping("/login")
-    @Operation(summary = "用户登录", description = "用户使用用户名和密码进行登录，成功后返回JWT令牌")
+    @Operation(summary = "用户登录", description = "用户通过用户名和密码进行登录，成功后返回JWT令牌")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200", 
@@ -51,12 +45,6 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("登录成功", response));
     }
 
-    /**
-     * 用户注册接口
-     * @param request 注册请求参数，包含用户名、密码、邮箱等
-     * @return 注册成功返回HTTP 201状态码
-     * @throws BusinessException 用户名已存在或邮箱已被注册时抛出异常
-     */
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "创建新用户账户，需要提供用户名、密码和邮箱")
     @ApiResponses(value = {

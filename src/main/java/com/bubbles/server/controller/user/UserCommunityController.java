@@ -1,4 +1,4 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.user;
 
 import com.bubbles.pojo.dto.request.CommunityCreateRequest;
 import com.bubbles.pojo.dto.request.CommunityUpdateRequest;
@@ -17,21 +17,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 社区管理控制器
- */
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/communities")
-@Tag(name = "社区管理接口", description = "社区的创建、查询、更新和删除操作")
-public class CommunityController {
+@Tag(name = "用户社区接口", description = "社区的创建、查询、更新和删除操作")
+public class UserCommunityController {
 
     private final CommunityService communityService;
     private final CommunityMemberService memberService;
     private final JwtUtil jwtUtil;
 
-    public CommunityController(CommunityService communityService,
-                             CommunityMemberService memberService,
-                             JwtUtil jwtUtil) {
+    public UserCommunityController(CommunityService communityService,
+                                   CommunityMemberService memberService,
+                                   JwtUtil jwtUtil) {
         this.communityService = communityService;
         this.memberService = memberService;
         this.jwtUtil = jwtUtil;
@@ -91,6 +90,27 @@ public class CommunityController {
         Integer userId = getCurrentUserId(httpRequest);
         communityService.deleteCommunity(communityId, userId);
         return ResponseEntity.ok(ApiResponse.success("删除成功", null));
+    }
+
+    @GetMapping("/users/{userId}")
+    @Operation(summary = "获取用户社区列表", description = "获取用户加入的所有社区")
+    public ResponseEntity<ApiResponse<List<CommunityResponse>>> getUserCommunities(
+            @Parameter(description = "用户ID") @PathVariable(name = "userId") Integer userId,
+            HttpServletRequest httpRequest) {
+        Integer currentUserId = getCurrentUserId(httpRequest);
+        if (!currentUserId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(403, "无权限查看他人社区"));
+        }
+        List<CommunityResponse> response = memberService.getUserCommunities(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/users/{userId}/count")
+    @Operation(summary = "获取用户社区数量", description = "获取用户加入的社区数量")
+    public ResponseEntity<ApiResponse<Integer>> countUserCommunities(
+            @Parameter(description = "用户ID") @PathVariable(name = "userId") Integer userId) {
+        int count = memberService.countUserCommunities(userId);
+        return ResponseEntity.ok(ApiResponse.success(count));
     }
 
     private Integer getCurrentUserId(HttpServletRequest request) {

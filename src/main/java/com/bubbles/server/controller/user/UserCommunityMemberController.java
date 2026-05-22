@@ -1,8 +1,7 @@
-package com.bubbles.server.controller;
+package com.bubbles.server.controller.user;
 
 import com.bubbles.pojo.dto.response.ApiResponse;
 import com.bubbles.pojo.dto.response.CommunityMemberResponse;
-import com.bubbles.pojo.dto.response.CommunityResponse;
 import com.bubbles.pojo.dto.response.PageResponse;
 import com.bubbles.server.service.CommunityMemberService;
 import com.bubbles.common.utils.JwtUtil;
@@ -14,20 +13,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-/**
- * 社区成员管理控制器
- */
 @RestController
 @RequestMapping("/api/communities/{communityId}/members")
-@Tag(name = "社区成员管理接口", description = "社区成员的加入、退出、角色管理等操作")
-public class CommunityMemberController {
+@Tag(name = "用户社区成员接口", description = "社区成员的加入、退出、角色管理等操作")
+public class UserCommunityMemberController {
 
     private final CommunityMemberService communityMemberService;
     private final JwtUtil jwtUtil;
 
-    public CommunityMemberController(CommunityMemberService communityMemberService, JwtUtil jwtUtil) {
+    public UserCommunityMemberController(CommunityMemberService communityMemberService, JwtUtil jwtUtil) {
         this.communityMemberService = communityMemberService;
         this.jwtUtil = jwtUtil;
     }
@@ -99,19 +93,6 @@ public class CommunityMemberController {
         boolean isMember = communityMemberService.isMember(communityId, userId);
         String role = communityMemberService.getMemberRole(communityId, userId);
         MemberCheckResponse response = new MemberCheckResponse(isMember, role);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    @GetMapping("/users/{userId}/communities")
-    @Operation(summary = "获取用户社区列表", description = "获取用户加入的社区列表")
-    public ResponseEntity<ApiResponse<List<CommunityResponse>>> getUserCommunities(
-            @Parameter(description = "用户ID") @PathVariable(name = "userId") Integer userId,
-            HttpServletRequest httpRequest) {
-        Integer currentUserId = getCurrentUserId(httpRequest);
-        if (!currentUserId.equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(403, "无权限查看他人社区"));
-        }
-        List<CommunityResponse> response = communityMemberService.getUserCommunities(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

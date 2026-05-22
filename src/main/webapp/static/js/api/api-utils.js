@@ -5,7 +5,8 @@ function setApiBase(base) {
 }
 
 function getApiBase() {
-    return window.__API_BASE__ || window.API_BASE || '';
+    const ctxPath = window.location.pathname.split('/')[1] || '';
+    return `/${ctxPath}/api`;
 }
 
 function setToken(token) {
@@ -17,7 +18,6 @@ async function fetchApi(url, options = {}) {
         headers: {}
     };
     
-    // 如果不是 FormData，才设置默认 Content-Type
     if (!options.body || !(options.body instanceof FormData)) {
         defaultOptions.headers['Content-Type'] = 'application/json';
     }
@@ -27,7 +27,10 @@ async function fetchApi(url, options = {}) {
     }
     
     try {
-        const response = await fetch(getApiBase() + url, { ...defaultOptions, ...options });
+        const fullUrl = getApiBase() + url;
+        console.log('Fetching API:', fullUrl);
+        
+        const response = await fetch(fullUrl, { ...defaultOptions, ...options });
         
         if (response.status === 401) {
             clearAuth();
