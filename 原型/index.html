@@ -9,76 +9,162 @@
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#home" onclick="showPage('home')">
-                <i class="fas fa-calendar-alt text-primary"></i> EventHub
-            </a>
-            <div class="d-flex align-items-center">
-                <div class="input-group me-3" style="width: 300px;">
-                    <input type="text" class="form-control" placeholder="Search events..." id="searchInput">
-                    <button class="btn btn-outline-primary" type="button" onclick="searchEvents()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                        <img id="headerAvatar" src="" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; display: none;">
-                        <span id="headerAvatarInitial" class="rounded-circle bg-primary text-white d-flex align-items-center justify-center me-2" style="width: 32px; height: 32px;">U</span>
-                        <span id="currentUsername">Admin</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#profile" onclick="showPage('profile')">Profile</a></li>
-                        <li><a class="dropdown-item" href="#settings">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleLogout()">Logout</a></li>
-                    </ul>
-                </div>
-            </div>
+    <div id="background-container" class="background-container">
+        <div id="video-background" class="video-background hidden">
+            <video id="bg-video" autoplay muted loop playsinline>
+                <source src="Mock-background/videos/8cd6ab41d3814faac0f96ec1e2bd4fbd_raw.mp4" type="video/mp4">
+            </video>
         </div>
-    </nav>
-
-    <div class="row g-0">
-        <div class="col-2 sidebar p-0">
-            <div class="p-4 border-bottom border-white/10">
-                <h4 class="text-center font-bold">EventHub</h4>
+        <div id="image-background" class="image-background"></div>
+        <div id="css-animation-background" class="css-animation-background">
+            <div class="rain-background"></div>
+            <div class="thunder-flash"></div>
+        </div>
+    </div>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-circle"></div>
+                <span class="sidebar-logo-text">EventHub</span>
             </div>
-            <nav class="nav flex-column p-2">
-                <a class="nav-link active" href="#home" onclick="showPage('home'); return false;">
+            <nav class="sidebar-nav">
+                <a class="sidebar-nav-item active" href="#home" onclick="showPage('home'); return false;">
                     <i class="fas fa-home"></i> Home
                 </a>
-                <a class="nav-link" href="#communities" onclick="showPage('communities'); return false;">
+                <a class="sidebar-nav-item" href="#communities" onclick="showPage('communities'); return false;">
                     <i class="fas fa-users"></i> Communities
                 </a>
-                <a class="nav-link" href="#events" onclick="showPage('events'); return false;">
+                <a class="sidebar-nav-item" href="#events" onclick="showPage('events'); return false;">
                     <i class="fas fa-calendar"></i> Events
                 </a>
-                <a class="nav-link" href="#registrations" onclick="showPage('registrations'); return false;">
+                <a class="sidebar-nav-item" href="#registrations" onclick="showPage('registrations'); return false;">
                     <i class="fas fa-file-alt"></i> Registrations
                 </a>
-                <a class="nav-link" href="#users" onclick="showPage('users'); return false;">
+                <a class="sidebar-nav-item" href="#users" onclick="showPage('users'); return false;">
                     <i class="fas fa-users"></i> Users
                 </a>
-                <a class="nav-link" href="#categories" onclick="showPage('categories'); return false;">
+                <a class="sidebar-nav-item" href="#categories" onclick="showPage('categories'); return false;">
                     <i class="fas fa-tags"></i> Categories
                 </a>
-                <a class="nav-link" href="#dashboard" onclick="showPage('dashboard'); return false;">
+                <a class="sidebar-nav-item" href="#dashboard" onclick="showPage('dashboard'); return false;">
                     <i class="fas fa-chart-line"></i> Dashboard
                 </a>
-                <div class="border-top border-white/10 my-2"></div>
-                <a class="nav-link" href="#applications" onclick="showPage('applications'); return false;">
+                <a class="sidebar-nav-item" href="#applications" onclick="showPage('applications'); return false;">
                     <i class="fas fa-file-clipboard"></i> Applications
                 </a>
-                <a class="nav-link" href="#community-approvals" onclick="showPage('community-approvals'); return false;">
+                <a class="sidebar-nav-item" href="#community-approvals" onclick="showPage('community-approvals'); return false;">
                     <i class="fas fa-check-circle"></i> Approvals
                 </a>
-                <a class="nav-link" href="#profile" onclick="showPage('profile'); return false;">
+                <a class="sidebar-nav-item" href="#profile" onclick="showPage('profile'); return false;">
                     <i class="fas fa-user-circle"></i> Profile
                 </a>
             </nav>
-        </div>
+        </aside>
 
-        <div class="col-10 content p-4">
+        <div class="main-content">
+            <header class="top-navbar">
+                <div class="search-area">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search events..." id="searchInput">
+                </div>
+                <div class="user-area">
+                    <div class="user-avatar"></div>
+                    <i class="fas fa-chevron-down user-icon"></i>
+                </div>
+            </header>
+
+            <div class="content-area">
+            <div class="card-templates" style="display: none;">
+                <template id="stat-card-template">
+                    <div class="stat-card p-4">
+                        <div class="stat-actions">
+                            <button class="list-action-btn" onclick="handleStatCardAction('{{id}}', 'more')">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="stat-icon text-primary mb-2">
+                            <i class="fas {{icon}}"></i>
+                        </div>
+                        <div class="stat-value">{{value}}</div>
+                        <div class="stat-label">{{label}}</div>
+                    </div>
+                </template>
+                <template id="event-card-template">
+                    <div class="event-card" onclick="viewEvent('{{id}}')">
+                        <div class="event-banner">
+                            <div class="event-badge {{statusClass}}">{{status}}</div>
+                        </div>
+                        <div class="event-content">
+                            <h3 class="event-title">{{title}}</h3>
+                            <p class="event-desc">{{description}}</p>
+                            <div class="event-meta">
+                                <span class="event-meta-item"><i class="fas fa-calendar"></i>{{date}}</span>
+                                <span class="event-meta-item"><i class="fas fa-map-marker-alt"></i>{{location}}</span>
+                                <span class="event-meta-item"><i class="fas fa-users"></i>{{participants}} participants</span>
+                            </div>
+                        </div>
+                        <div class="event-actions">
+                            <button class="event-action-btn primary" onclick="event.stopPropagation(); handleEventAction('{{id}}', 'register')">
+                                <i class="fas fa-clipboard-list"></i> Register
+                            </button>
+                            <button class="event-action-btn secondary" onclick="event.stopPropagation(); handleEventAction('{{id}}', 'share')">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <template id="community-card-template">
+                    <div class="community-card" onclick="viewCommunity('{{id}}')">
+                        <div class="community-banner"></div>
+                        <div class="community-logo">{{logoEmoji}}</div>
+                        <div class="community-content">
+                            <h3 class="community-name">{{name}}</h3>
+                            <p class="community-desc">{{description}}</p>
+                            <div class="community-meta">
+                                <span class="community-member-count"><i class="fas fa-users"></i>{{memberCount}} members</span>
+                                <span class="community-member-count"><i class="fas fa-calendar"></i>{{eventCount}} events</span>
+                            </div>
+                        </div>
+                        <div class="community-actions">
+                            <button class="community-action-btn join" onclick="event.stopPropagation(); handleCommunityAction('{{id}}', 'join')">
+                                <i class="fas fa-user-plus"></i> Join
+                            </button>
+                            <button class="community-action-btn view" onclick="event.stopPropagation(); handleCommunityAction('{{id}}', 'view')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <template id="list-card-template">
+                    <div class="list-card">
+                        <div class="list-card-icon {{iconClass}}">
+                            <i class="fas {{icon}}"></i>
+                        </div>
+                        <div class="list-card-content">
+                            <h4 class="list-card-title">{{title}}</h4>
+                            <p class="list-card-desc">{{description}}</p>
+                            <span class="list-card-meta">{{meta}}</span>
+                        </div>
+                        <div class="list-card-actions">
+                            <button class="list-action-btn" onclick="handleListAction('{{id}}', 'edit')"><i class="fas fa-edit"></i></button>
+                            <button class="list-action-btn" onclick="handleListAction('{{id}}', 'view')"><i class="fas fa-eye"></i></button>
+                            <button class="list-action-btn danger" onclick="handleListAction('{{id}}', 'delete')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </template>
+                <template id="activity-card-template">
+                    <div class="list-card">
+                        <div class="list-card-icon {{iconClass}}">
+                            <i class="fas {{icon}}"></i>
+                        </div>
+                        <div class="list-card-content">
+                            <h4 class="list-card-title">{{title}}</h4>
+                            <p class="list-card-desc">{{description}}</p>
+                        </div>
+                        <span class="text-xs text-gray-400">{{time}}</span>
+                    </div>
+                </template>
+            </div>
             <div id="page-home" class="page-content active"></div>
             <div id="page-home-new" class="page-content"></div>
             <div id="page-communities" class="page-content"></div>
@@ -98,11 +184,13 @@
             <div id="page-applications" class="page-content"></div>
             <div id="page-community-approvals" class="page-content"></div>
             <div id="page-profile" class="page-content"></div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="components/card-components.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

@@ -15,53 +15,128 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1e88e5;
-            --bg-color: #f5f7fa;
+            --primary-color: #25B8A6;
+            --primary-dark: #1A8E83;
+            --white-95: rgba(255, 255, 255, 0.95);
+            --white-90: rgba(255, 255, 255, 0.9);
+            --white-70: rgba(255, 255, 255, 0.7);
+            --white-65: rgba(255, 255, 255, 0.65);
+            --white-20: rgba(255, 255, 255, 0.2);
+            --white-12: rgba(255, 255, 255, 0.12);
+            --white-10: rgba(255, 255, 255, 0.1);
+            --white-08: rgba(255, 255, 255, 0.08);
         }
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
         }
         .login-container {
             max-width: 420px;
             width: 100%;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             padding: 48px;
         }
-        .logo {
-            font-size: 2.5rem;
-            color: var(--primary-color);
+        .logo-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 16px rgba(37, 184, 166, 0.4);
+        }
+        .logo-icon {
+            font-size: 1.8rem;
+            color: white;
+        }
+        .form-control {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: var(--white-90);
+            padding: 14px 16px;
         }
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.25);
+            box-shadow: 0 0 0 3px rgba(37, 184, 166, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--white-90);
+        }
+        .form-control::placeholder {
+            color: var(--white-65);
+        }
+        .form-label {
+            color: var(--white-90);
+            font-weight: 500;
+        }
+        .form-check-input {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .form-check-input:checked {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .form-check-label {
+            color: var(--white-70);
         }
         .btn-primary {
             background-color: var(--primary-color) !important;
             border: none;
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 14px;
             font-size: 16px;
+            font-weight: 600;
         }
         .btn-primary:hover {
-            background-color: #1976d2 !important;
+            background-color: var(--primary-dark) !important;
+            box-shadow: 0 4px 16px rgba(37, 184, 166, 0.4);
         }
         .alert {
-            border-radius: 8px;
+            border-radius: 12px;
+            background: rgba(232, 116, 116, 0.2);
+            border-color: rgba(232, 116, 116, 0.3);
+            color: #E87474;
+        }
+        .text-primary {
+            color: var(--primary-color);
+        }
+        .text-gray-800 {
+            color: var(--white-95);
+        }
+        .text-gray-500 {
+            color: var(--white-65);
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="text-center mb-6">
-            <div class="logo mb-3">
-                <i class="fas fa-calendar-alt"></i>
+            <div class="logo-circle">
+                <i class="fas fa-calendar-alt logo-icon"></i>
             </div>
             <h1 class="text-xl font-bold text-gray-800">EventHub</h1>
             <p class="text-gray-500 mt-1">Community Event Management</p>

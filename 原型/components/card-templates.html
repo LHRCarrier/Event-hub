@@ -1,0 +1,116 @@
+<div class="card-templates" style="display: none;">
+    <template id="stat-card-template">
+        <div class="stat-card p-4">
+            <div class="stat-actions">
+                <button class="list-action-btn" onclick="handleStatCardAction('{{id}}', 'more')">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+            <div class="stat-icon text-primary mb-2">
+                <i class="fas {{icon}}"></i>
+            </div>
+            <div class="stat-value">{{value}}</div>
+            <div class="stat-label">{{label}}</div>
+        </div>
+    </template>
+
+    <template id="event-card-template">
+        <div class="event-card" onclick="viewEvent('{{id}}')">
+            <div class="event-banner">
+                <div class="event-badge {{statusClass}}">{{status}}</div>
+            </div>
+            <div class="event-content">
+                <h3 class="event-title">{{title}}</h3>
+                <p class="event-desc">{{description}}</p>
+                <div class="event-meta">
+                    <span class="event-meta-item">
+                        <i class="fas fa-calendar"></i>
+                        {{date}}
+                    </span>
+                    <span class="event-meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{location}}
+                    </span>
+                    <span class="event-meta-item">
+                        <i class="fas fa-users"></i>
+                        {{participants}} participants
+                    </span>
+                </div>
+            </div>
+            <div class="event-actions">
+                <button class="event-action-btn primary" onclick="event.stopPropagation(); handleEventAction('{{id}}', 'register')">
+                    <i class="fas fa-clipboard-list"></i> Register
+                </button>
+                <button class="event-action-btn secondary" onclick="event.stopPropagation(); handleEventAction('{{id}}', 'share')">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template id="community-card-template">
+        <div class="community-card" onclick="viewCommunity('{{id}}')">
+            <div class="community-banner"></div>
+            <div class="community-logo">{{logoEmoji}}</div>
+            <div class="community-content">
+                <h3 class="community-name">{{name}}</h3>
+                <p class="community-desc">{{description}}</p>
+                <div class="community-meta">
+                    <span class="community-member-count">
+                        <i class="fas fa-users"></i>
+                        {{memberCount}} members
+                    </span>
+                    <span class="community-member-count">
+                        <i class="fas fa-calendar"></i>
+                        {{eventCount}} events
+                    </span>
+                </div>
+            </div>
+            <div class="community-actions">
+                <button class="community-action-btn join" onclick="event.stopPropagation(); handleCommunityAction('{{id}}', 'join')">
+                    <i class="fas fa-user-plus"></i> Join
+                </button>
+                <button class="community-action-btn view" onclick="event.stopPropagation(); handleCommunityAction('{{id}}', 'view')">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template id="list-card-template">
+        <div class="list-card">
+            <div class="list-card-icon {{iconClass}}">
+                <i class="fas {{icon}}"></i>
+            </div>
+            <div class="list-card-content">
+                <h4 class="list-card-title">{{title}}</h4>
+                <p class="list-card-desc">{{description}}</p>
+                <span class="list-card-meta">{{meta}}</span>
+            </div>
+            <div class="list-card-actions">
+                <button class="list-action-btn" onclick="handleListAction('{{id}}', 'edit')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="list-action-btn" onclick="handleListAction('{{id}}', 'view')">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="list-action-btn danger" onclick="handleListAction('{{id}}', 'delete')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template id="activity-card-template">
+        <div class="list-card">
+            <div class="list-card-icon {{iconClass}}">
+                <i class="fas {{icon}}"></i>
+            </div>
+            <div class="list-card-content">
+                <h4 class="list-card-title">{{title}}</h4>
+                <p class="list-card-desc">{{description}}</p>
+            </div>
+            <span class="text-xs text-gray-400">{{time}}</span>
+        </div>
+    </template>
+</div>

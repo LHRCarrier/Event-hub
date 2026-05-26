@@ -70,6 +70,19 @@ function showPage(pageName) {
         return;
     }
 
+    document.querySelectorAll('.modal').forEach(modalEl => {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) {
+            modal.hide();
+        }
+    });
+    
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.remove();
+    });
+    
+    document.body.classList.remove('modal-open');
+
     document.querySelectorAll('.page-content').forEach(el => el.classList.add('d-none'));
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
     
@@ -289,25 +302,42 @@ function formatDate(dateStr) {
 async function loadEvents(page) {
     const result = await EventsAPI.getEvents(page, 10);
     if (result.code === 200) {
-        const tbody = document.querySelector('#eventsTable tbody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('eventsList');
+        container.innerHTML = '';
         
-        result.data.list.forEach(event => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${event.name}</td>
-                <td>${formatDate(event.date)}</td>
-                <td>${event.location}</td>
-                <td>${event.categoryName || '-'}</td>
-                <td><span class="badge ${event.status === 'UPCOMING' ? 'badge-success' : 'badge-warning'}">${event.status}</span></td>
-                <td>${event.participantCount}</td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="viewEvent(${event.eventId})">View</button>
-                    <button class="btn btn-sm btn-warning ms-2" onclick="editEvent(${event.eventId})">Edit</button>
-                    <button class="btn btn-sm btn-danger ms-2" onclick="deleteEvent(${event.eventId})">Delete</button>
-                </td>
+        const colors = [
+            'linear-gradient(135deg, #1e88e5, #42a5f5)',
+            'linear-gradient(135deg, #ff9800, #ffb74d)',
+            'linear-gradient(135deg, #e91e63, #f48fb1)',
+            'linear-gradient(135deg, #4caf50, #81c784)'
+        ];
+        
+        result.data.list.forEach((event, index) => {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.innerHTML = `
+                <div class="event-banner" style="background: ${colors[index % colors.length]};"></div>
+                <div class="event-content">
+                    <div class="event-header">
+                        <h3 class="event-title">${event.name}</h3>
+                        <span class="event-badge ${event.status === 'UPCOMING' ? 'active' : ''}">${event.status}</span>
+                    </div>
+                    <p class="event-description">${event.description || ''}</p>
+                    <div class="event-meta">
+                        <span class="event-meta-item"><i class="fas fa-calendar"></i> ${formatDate(event.date)}</span>
+                        <span class="event-meta-item"><i class="fas fa-map-marker-alt"></i> ${event.location || '-'}</span>
+                    </div>
+                    <div class="event-footer">
+                        <span class="event-participants"><i class="fas fa-users"></i> ${event.participantCount || 0} participants</span>
+                        <div class="event-actions">
+                            <button class="action-btn secondary" onclick="viewEvent(${event.eventId})"><i class="fas fa-eye"></i></button>
+                            <button class="action-btn secondary" onclick="editEvent(${event.eventId})"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn danger" onclick="deleteEvent(${event.eventId})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
             `;
-            tbody.appendChild(row);
+            container.appendChild(card);
         });
         
         renderPagination(result.data, 'eventsPagination', loadEvents);
@@ -455,27 +485,43 @@ async function handleCreateEvent(e) {
 async function loadUsers(page) {
     const result = await UsersAPI.getUsers(page, 10);
     if (result.code === 200) {
-        const tbody = document.querySelector('#usersTable tbody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('usersList');
+        container.innerHTML = '';
+        
+        const statusColors = {
+            'ACTIVE': 'active',
+            'DISABLED': 'inactive'
+        };
         
         result.data.list.forEach(user => {
-            const row = document.createElement('tr');
-            const statusColor = (user.status || 'ACTIVE') === 'DISABLED' ? 'badge-danger' : 'badge-success';
-            const actionBtn = (user.status || 'ACTIVE') === 'DISABLED' 
-                ? `<button class="btn btn-sm btn-success ms-2" onclick="enableUser(${user.userId})">Enable</button>` 
-                : `<button class="btn btn-sm btn-danger ms-2" onclick="disableUser(${user.userId})">Disable</button>`;
-            row.innerHTML = `
-                <td>${user.username}</td>
-                <td>${user.email}</td>
-                <td>${user.role}</td>
-                <td><span class="badge ${statusColor}">${user.status || 'ACTIVE'}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                    <button class="btn btn-sm btn-warning ms-2">Edit</button>
-                    ${actionBtn}
-                </td>
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            const userStatus = user.status || 'ACTIVE';
+            const initial = (user.username || 'U').charAt(0).toUpperCase();
+            card.innerHTML = `
+                <div class="user-card-header">
+                    <div class="user-avatar" style="background: var(--primary-color);">
+                        ${user.avatarUrl ? `<img src="${user.avatarUrl}" alt="${user.username}" class="user-avatar-img">` : `<span class="user-avatar-text">${initial}</span>`}
+                    </div>
+                    <span class="user-role-badge ${user.role === 'ADMIN' ? 'admin' : 'member'}">${user.role}</span>
+                </div>
+                <div class="user-card-content">
+                    <h3 class="user-name">${user.username}</h3>
+                    <p class="user-email">${user.email || ''}</p>
+                    <div class="user-status ${statusColors[userStatus] || 'active'}">
+                        <span class="status-dot"></span>
+                        ${userStatus === 'ACTIVE' ? 'Active' : 'Inactive'}
+                    </div>
+                </div>
+                <div class="user-card-actions">
+                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                    ${userStatus === 'ACTIVE' ? 
+                        `<button class="action-btn danger" onclick="disableUser(${user.userId})"><i class="fas fa-ban"></i></button>` :
+                        `<button class="action-btn" onclick="enableUser(${user.userId})"><i class="fas fa-check"></i></button>`
+                    }
+                </div>
             `;
-            tbody.appendChild(row);
+            container.appendChild(card);
         });
         
         renderPagination(result.data, 'usersPagination', loadUsers);
@@ -509,27 +555,41 @@ async function enableUser(userId) {
 async function loadCategories() {
     const result = await CategoriesAPI.getCategories();
     if (result.code === 200) {
-        const list = document.getElementById('categoriesList');
-        list.innerHTML = '';
+        const container = document.getElementById('categoriesList');
+        container.innerHTML = '';
         
-        const icons = ['💻', '⚽', '🎭', '🎨', '📚', '🎵', '🍔', '👥'];
+        const icons = [
+            { icon: 'fa-code', color: 'rgba(37, 184, 166, 0.3)' },
+            { icon: 'fa-palette', color: 'rgba(139, 92, 246, 0.3)' },
+            { icon: 'fa-briefcase', color: 'rgba(59, 130, 246, 0.3)' },
+            { icon: 'fa-robot', color: 'rgba(245, 166, 35, 0.3)' },
+            { icon: 'fa-music', color: 'rgba(232, 116, 116, 0.3)' },
+            { icon: 'fa-running', color: 'rgba(126, 217, 87, 0.3)' },
+            { icon: 'fa-book', color: 'rgba(107, 179, 217, 0.3)' },
+            { icon: 'fa-utensils', color: 'rgba(255, 193, 7, 0.3)' }
+        ];
         
         result.data.forEach((cat, index) => {
-            const col = document.createElement('div');
-            col.className = 'col-md-3 mb-4';
-            col.innerHTML = `
-                <div class="bg-white rounded-xl p-4 shadow-sm">
-                    <div class="text-4xl mb-3">${icons[index % icons.length]}</div>
-                    <h5 class="font-bold">${cat.name}</h5>
-                    <p class="text-sm text-gray-500">${cat.description}</p>
-                    <div class="text-sm text-gray-500 mt-2">${cat.eventCount} events</div>
-                    <div class="d-flex gap-2 mt-3">
-                        <button class="btn btn-sm btn-warning">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCategory(${cat.categoryId})">Delete</button>
+            const card = document.createElement('div');
+            card.className = 'category-card';
+            const iconData = icons[index % icons.length];
+            card.innerHTML = `
+                <div class="category-icon" style="background: ${iconData.color};">
+                    <i class="fas ${iconData.icon}" style="color: var(--primary-color);"></i>
+                </div>
+                <div class="category-content">
+                    <h3 class="category-name">${cat.name}</h3>
+                    <p class="category-desc">${cat.description || ''}</p>
+                    <div class="category-meta">
+                        <span class="category-stat"><i class="fas fa-calendar"></i> ${cat.eventCount || 0} events</span>
                     </div>
                 </div>
+                <div class="category-actions">
+                    <button class="action-btn secondary"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn danger" onclick="deleteCategory(${cat.categoryId})"><i class="fas fa-trash"></i></button>
+                </div>
             `;
-            list.appendChild(col);
+            container.appendChild(card);
         });
     }
 }
@@ -881,19 +941,49 @@ async function loadRegistrations() {
     
     const result = await RegistrationsAPI.getRegistrationsByUser(currentUser.userId);
     if (result.code === 200) {
-        const tbody = document.querySelector('#registrationsTable tbody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('registrationsList');
+        container.innerHTML = '';
         
-        result.data.forEach(reg => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${reg.eventName}</td>
-                <td>${currentUser.username}</td>
-                <td>-</td>
-                <td>${formatDate(reg.registerTime)}</td>
-                <td><button class="btn btn-sm btn-danger" onclick="cancelRegistration(${reg.registrationId})">Cancel</button></td>
+        if (!result.data || result.data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p class="empty-state-text">No registrations yet</p>
+                </div>
             `;
-            tbody.appendChild(row);
+            return;
+        }
+        
+        const colors = [
+            'rgba(37, 184, 166, 0.3)',
+            'rgba(139, 92, 246, 0.3)',
+            'rgba(59, 130, 246, 0.3)',
+            'rgba(245, 166, 35, 0.3)'
+        ];
+        
+        result.data.forEach((reg, index) => {
+            const card = document.createElement('div');
+            card.className = 'registration-card';
+            card.innerHTML = `
+                <div class="registration-icon" style="background: ${colors[index % colors.length]};">
+                    <i class="fas fa-calendar-check" style="color: var(--primary-color);"></i>
+                </div>
+                <div class="registration-content">
+                    <h3 class="registration-title">${reg.eventName || 'Event'}</h3>
+                    <p class="registration-user">
+                        <span class="user-avatar-small">${(currentUser.username || 'U').charAt(0).toUpperCase()}</span>
+                        ${currentUser.username}
+                    </p>
+                    <div class="registration-meta">
+                        <span class="registration-date"><i class="fas fa-clock"></i> ${formatDate(reg.registerTime)}</span>
+                        <span class="registration-status confirmed">Confirmed</span>
+                    </div>
+                </div>
+                <div class="registration-actions">
+                    <button class="action-btn danger" onclick="cancelRegistration(${reg.registrationId})"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            container.appendChild(card);
         });
     }
 }
@@ -959,24 +1049,44 @@ function loadAvatar(avatarUrl, username) {
 
 function updateHeaderAvatar(avatarUrl, username) {
     const headerAvatar = document.getElementById('headerAvatar');
+    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
     const previewAvatarImg = document.getElementById('previewAvatarImg');
     const menuAvatar = document.getElementById('menuAvatar');
+    const menuAvatarInitial = document.getElementById('menuAvatarInitial');
     if (!headerAvatar) return;
     
-    let avatarSrc;
+    const initial = (username || 'U').charAt(0).toUpperCase();
+    
     if (avatarUrl && avatarUrl.trim()) {
-        avatarSrc = avatarUrl;
+        headerAvatar.src = avatarUrl;
+        headerAvatar.style.display = 'block';
+        if (headerAvatarInitial) {
+            headerAvatarInitial.style.display = 'none';
+        }
+        if (menuAvatar) {
+            menuAvatar.src = avatarUrl;
+            menuAvatar.style.display = 'block';
+        }
+        if (menuAvatarInitial) {
+            menuAvatarInitial.style.display = 'none';
+        }
     } else {
-        const initial = (username || 'U').charAt(0).toUpperCase();
-        avatarSrc = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=random&size=64`;
+        headerAvatar.style.display = 'none';
+        if (headerAvatarInitial) {
+            headerAvatarInitial.style.display = 'flex';
+            headerAvatarInitial.textContent = initial;
+        }
+        if (menuAvatar) {
+            menuAvatar.style.display = 'none';
+        }
+        if (menuAvatarInitial) {
+            menuAvatarInitial.style.display = 'flex';
+            menuAvatarInitial.textContent = initial;
+        }
     }
     
-    headerAvatar.src = avatarSrc;
     if (previewAvatarImg) {
-        previewAvatarImg.src = avatarSrc;
-    }
-    if (menuAvatar) {
-        menuAvatar.src = avatarSrc;
+        previewAvatarImg.src = avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=random&size=64`;
     }
 }
 
@@ -985,38 +1095,60 @@ function initUserMenu() {
     const avatarWrapper = document.getElementById('avatarWrapper');
     const menu = document.getElementById('userMenu');
     const headerAvatar = document.getElementById('headerAvatar');
+    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
     
-    if (!container || !avatarWrapper || !menu || !headerAvatar) return;
+    if (!container || !avatarWrapper || !menu) return;
     
     avatarWrapper.addEventListener('mouseenter', () => {
-        headerAvatar.style.transform = 'scale(1.1)';
-        menu.classList.remove('opacity-0', 'invisible');
-        menu.classList.add('opacity-100', 'visible');
+        // 隐藏小头像，显示大菜单
+        if (headerAvatar) {
+            headerAvatar.style.opacity = '0';
+        }
+        if (headerAvatarInitial) {
+            headerAvatarInitial.style.opacity = '0';
+        }
+        
+        menu.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
+        menu.classList.add('opacity-100', 'visible', 'pointer-events-auto');
+        menu.style.transform = 'translate(0, 0) scale(1)';
     });
     
     menu.addEventListener('mouseleave', () => {
-        headerAvatar.style.transform = 'scale(1)';
+        // 隐藏大菜单，显示小头像
+        menu.style.transform = 'translate(-24px, -64px) scale(0.4)';
         setTimeout(() => {
-            menu.classList.remove('opacity-100', 'visible');
-            menu.classList.add('opacity-0', 'invisible');
-        }, 150);
+            menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
+            menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+            if (headerAvatar) {
+                headerAvatar.style.opacity = '1';
+            }
+            if (headerAvatarInitial) {
+                headerAvatarInitial.style.opacity = '1';
+            }
+        }, 250);
     });
     
     container.addEventListener('mouseleave', () => {
-        headerAvatar.style.transform = 'scale(1)';
+        // 隐藏大菜单，显示小头像
+        menu.style.transform = 'translate(-24px, -64px) scale(0.4)';
         setTimeout(() => {
             const menuRect = menu.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
-            const now = new Date();
             const mouseX = window.lastMouseX || 0;
             const mouseY = window.lastMouseY || 0;
             if (!(mouseX >= menuRect.left && mouseX <= menuRect.right && mouseY >= menuRect.top && mouseY <= menuRect.bottom)) {
                 if (!(mouseX >= containerRect.left && mouseX <= containerRect.right && mouseY >= containerRect.top && mouseY <= containerRect.bottom)) {
-                    menu.classList.remove('opacity-100', 'visible');
-                    menu.classList.add('opacity-0', 'invisible');
+                    menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
+                    menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+                    if (headerAvatar) {
+                        headerAvatar.style.opacity = '1';
+                    }
+                    if (headerAvatarInitial) {
+                        headerAvatarInitial.style.opacity = '1';
+                    }
                 }
             }
-        }, 200);
+        }, 250);
     });
     
     document.addEventListener('mousemove', (e) => {
@@ -1028,12 +1160,19 @@ function initUserMenu() {
 function closeUserMenu() {
     const menu = document.getElementById('userMenu');
     const headerAvatar = document.getElementById('headerAvatar');
+    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
     if (menu) {
-        menu.classList.remove('opacity-100', 'visible');
-        menu.classList.add('opacity-0', 'invisible');
-    }
-    if (headerAvatar) {
-        headerAvatar.style.transform = 'scale(1)';
+        menu.style.transform = 'translate(-24px, -64px) scale(0.4)';
+        setTimeout(() => {
+            menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
+            menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+            if (headerAvatar) {
+                headerAvatar.style.opacity = '1';
+            }
+            if (headerAvatarInitial) {
+                headerAvatarInitial.style.opacity = '1';
+            }
+        }, 250);
     }
 }
 
@@ -1104,8 +1243,11 @@ function handleAvatarFile(file) {
             document.getElementById('previewImage').src = e.target.result;
             document.getElementById('previewFileName').textContent = `File: ${file.name}`;
             document.getElementById('previewFileSize').textContent = `Size: ${formatFileSize(file.size)}`;
+            
+            cleanupModalBackdrops();
+            
             const modalElement = document.getElementById('avatarPreviewModal');
-            const modal = new bootstrap.Modal(modalElement);
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
             modal.show();
         };
         reader.readAsDataURL(file);
@@ -1144,9 +1286,15 @@ async function uploadAvatar() {
     showAvatarStatus('Uploading...', 'loading');
     const modalElement = document.getElementById('avatarPreviewModal');
     const modal = bootstrap.Modal.getInstance(modalElement);
+    
     if (modal) {
-        modal.hide();
+        await new Promise(resolve => {
+            modal.hide();
+            modalElement.addEventListener('hidden.bs.modal', resolve, { once: true });
+        });
     }
+    
+    cleanupModalBackdrops();
     
     const result = await UsersAPI.uploadAvatar(currentUser.userId, selectedAvatarFile);
     
@@ -1301,24 +1449,44 @@ async function loadJoinApplications(page = 1) {
         const container = document.getElementById('joinApplicationsList');
         
         if (!result.data.list || result.data.list.length === 0) {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8"><div class="text-4xl mb-3">📋</div><p>No join applications</p></div>';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p class="empty-state-text">No join applications</p>
+                </div>
+            `;
             return;
         }
         
         container.innerHTML = '';
-        result.data.list.forEach(app => {
-            const div = document.createElement('div');
-            div.className = 'p-3 bg-gray-50 rounded-lg mb-2';
-            div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="font-medium">${app.communityName}</p>
-                        <p class="text-sm text-gray-500">Applied: ${formatDate(app.applyTime)}</p>
-                    </div>
-                    <span class="badge ${app.status === 'PENDING' ? 'badge-warning' : app.status === 'APPROVED' ? 'badge-success' : 'badge-danger'}">${app.status}</span>
+        const colors = [
+            'rgba(37, 184, 166, 0.3)',
+            'rgba(126, 217, 87, 0.3)',
+            'rgba(59, 130, 246, 0.3)'
+        ];
+        
+        result.data.list.forEach((app, index) => {
+            const card = document.createElement('div');
+            card.className = 'application-card';
+            card.innerHTML = `
+                <div class="application-icon" style="background: ${colors[index % colors.length]};">
+                    <i class="fas fa-users" style="color: var(--primary-color);"></i>
                 </div>
+                <div class="application-content">
+                    <h3 class="application-title">${app.communityName || 'Community'}</h3>
+                    <p class="application-desc">Applying to join this community</p>
+                    <div class="application-meta">
+                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
+                        <span class="application-status ${app.status.toLowerCase()}">${app.status}</span>
+                    </div>
+                </div>
+                ${app.status === 'PENDING' ? `
+                <div class="application-actions">
+                    <button class="action-btn cancel"><i class="fas fa-times"></i></button>
+                </div>
+                ` : ''}
             `;
-            container.appendChild(div);
+            container.appendChild(card);
         });
     }
 }
@@ -1328,25 +1496,45 @@ async function loadCreateApplications() {
     if (result.code === 200) {
         const container = document.getElementById('createApplicationsList');
         
-        if (result.data.length === 0) {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8"><div class="text-4xl mb-3">📝</div><p>No creation applications</p></div>';
+        if (!result.data || result.data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p class="empty-state-text">No creation applications</p>
+                </div>
+            `;
             return;
         }
         
         container.innerHTML = '';
-        result.data.forEach(app => {
-            const div = document.createElement('div');
-            div.className = 'p-3 bg-gray-50 rounded-lg mb-2';
-            div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="font-medium">${app.name}</p>
-                        <p class="text-sm text-gray-500">Applied: ${formatDate(app.applyTime)}</p>
-                    </div>
-                    <span class="badge ${app.status === 'PENDING' ? 'badge-warning' : app.status === 'APPROVED' ? 'badge-success' : 'badge-danger'}">${app.status}</span>
+        const colors = [
+            'rgba(139, 92, 246, 0.3)',
+            'rgba(245, 166, 35, 0.3)',
+            'rgba(232, 116, 116, 0.3)'
+        ];
+        
+        result.data.forEach((app, index) => {
+            const card = document.createElement('div');
+            card.className = 'application-card';
+            card.innerHTML = `
+                <div class="application-icon" style="background: ${colors[index % colors.length]};">
+                    <i class="fas fa-plus-circle" style="color: #a78bfa;"></i>
                 </div>
+                <div class="application-content">
+                    <h3 class="application-title">${app.name || 'Community'}</h3>
+                    <p class="application-desc">Creating a new community</p>
+                    <div class="application-meta">
+                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
+                        <span class="application-status ${app.status.toLowerCase()}">${app.status}</span>
+                    </div>
+                </div>
+                ${app.status === 'PENDING' ? `
+                <div class="application-actions">
+                    <button class="action-btn cancel"><i class="fas fa-times"></i></button>
+                </div>
+                ` : ''}
             `;
-            container.appendChild(div);
+            container.appendChild(card);
         });
     }
 }
@@ -1355,29 +1543,51 @@ async function loadAdminApplications(status = 'PENDING', page = 1) {
     const communityId = currentCommunityId || 1;
     const result = await CommunityApplicationsAPI.getCommunityApplications(communityId, page, 10, status);
     if (result.code === 200) {
-        const tbody = document.getElementById('adminApplicationsTableBody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('adminApplicationsList');
+        container.innerHTML = '';
         
         if (!result.data.list || result.data.list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500">No applications</td></tr>';
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon">📋</div>
+                    <p class="empty-state-text">No applications</p>
+                </div>
+            `;
             return;
         }
         
-        result.data.list.forEach(app => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${app.communityName || '-'}</td>
-                <td>${app.username || '-'}</td>
-                <td>${formatDate(app.applyTime) || '-'}</td>
-                <td><span class="badge ${app.status === 'PENDING' ? 'badge-warning' : app.status === 'APPROVED' ? 'badge-success' : 'badge-danger'}">${app.status}</span></td>
-                <td>
-                    ${app.status === 'PENDING' ? `
-                    <button class="btn btn-sm btn-success" onclick="approveCommunityApplication(${app.applicationId}, 'APPROVED')">Approve</button>
-                    <button class="btn btn-sm btn-danger ms-2" onclick="showRejectModal(${app.applicationId})">Reject</button>
-                    ` : ''}
-                </td>
+        const colors = [
+            'rgba(245, 166, 35, 0.3)',
+            'rgba(37, 184, 166, 0.3)',
+            'rgba(126, 217, 87, 0.3)'
+        ];
+        
+        result.data.list.forEach((app, index) => {
+            const card = document.createElement('div');
+            card.className = 'admin-application-card';
+            card.innerHTML = `
+                <div class="admin-app-header">
+                    <div class="app-icon" style="background: ${colors[index % colors.length]};">
+                        <i class="fas fa-building" style="color: #fbbf24;"></i>
+                    </div>
+                    <span class="app-status ${app.status.toLowerCase()}">${app.status}</span>
+                </div>
+                <div class="admin-app-content">
+                    <h3 class="app-title">${app.communityName || 'Community'}</h3>
+                    <p class="app-desc">${app.message || 'Application to join'}</p>
+                    <div class="app-meta">
+                        <span class="meta-item"><i class="fas fa-user"></i> ${app.username || 'User'}</span>
+                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
+                    </div>
+                </div>
+                ${app.status === 'PENDING' ? `
+                <div class="admin-app-actions">
+                    <button class="action-btn approve" onclick="approveCommunityApplication(${app.applicationId}, 'APPROVED')"><i class="fas fa-check"></i> Approve</button>
+                    <button class="action-btn reject" onclick="showRejectModal(${app.applicationId})"><i class="fas fa-times"></i> Reject</button>
+                </div>
+                ` : ''}
             `;
-            tbody.appendChild(row);
+            container.appendChild(card);
         });
         
         renderPagination(result.data, 'adminApplicationsPagination', (p) => loadAdminApplications(status, p));
@@ -1386,29 +1596,59 @@ async function loadAdminApplications(status = 'PENDING', page = 1) {
 
 async function loadCommunityCreationApplications(status = 'PENDING', page = 1) {
     const result = await CommunityApplicationsAPI.getAllCommunityApplications(page, 10, status);
-    console.log('Community creation applications response:', result);
     if (result.code === 200) {
-        console.log('Data list:', result.data?.list);
-        const tbody = document.getElementById('communityCreationApplicationsTableBody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('communityCreationApplicationsList');
+        container.innerHTML = '';
         
-        result.data.list.forEach(app => {
-            console.log('App item:', app);
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${app.name || '-'}</td>
-                <td>${app.description || '-'}</td>
-                <td>${app.applicantName || '-'}</td>
-                <td>${formatDate(app.applyTime) || '-'}</td>
-                <td><span class="badge ${app.status === 'PENDING' ? 'badge-warning' : app.status === 'APPROVED' ? 'badge-success' : 'badge-danger'}">${app.status}</span></td>
-                <td>
-                    ${app.status === 'PENDING' ? `
-                    <button class="btn btn-sm btn-success" onclick="approveCreateCommunityApplication(${app.applicationId}, 'APPROVED')">Approve</button>
-                    <button class="btn btn-sm btn-danger ms-2" onclick="showRejectCreateModal(${app.applicationId})">Reject</button>
-                    ` : ''}
-                </td>
+        if (!result.data.list || result.data.list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon">📋</div>
+                    <p class="empty-state-text">No applications</p>
+                </div>
             `;
-            tbody.appendChild(row);
+            renderPagination(result.data, 'communityCreationApplicationsPagination', (p) => loadCommunityCreationApplications(status, p));
+            return;
+        }
+        
+        const colors = [
+            'rgba(245, 166, 35, 0.3)',
+            'rgba(139, 92, 246, 0.3)',
+            'rgba(126, 217, 87, 0.3)',
+            'rgba(232, 116, 116, 0.3)'
+        ];
+        const icons = ['fa-building', 'fa-music', 'fa-book', 'fa-gamepad'];
+        
+        result.data.list.forEach((app, index) => {
+            const card = document.createElement('div');
+            card.className = 'approval-card';
+            card.innerHTML = `
+                <div class="approval-header">
+                    <div class="approval-icon" style="background: ${colors[index % colors.length]};">
+                        <i class="fas ${icons[index % icons.length]}" style="color: #fbbf24;"></i>
+                    </div>
+                    <span class="approval-status ${app.status.toLowerCase()}">${app.status}</span>
+                </div>
+                <div class="approval-content">
+                    <h3 class="approval-name">${app.name || 'Community'}</h3>
+                    <p class="approval-desc">${app.description || 'Community creation request'}</p>
+                    <div class="approval-meta">
+                        <span class="meta-item"><i class="fas fa-user"></i> ${app.applicantName || 'User'}</span>
+                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
+                    </div>
+                </div>
+                ${app.status === 'PENDING' ? `
+                <div class="approval-actions">
+                    <button class="action-btn approve" onclick="approveCreateCommunityApplication(${app.applicationId}, 'APPROVED')"><i class="fas fa-check"></i> Approve</button>
+                    <button class="action-btn reject" onclick="showRejectCreateModal(${app.applicationId})"><i class="fas fa-times"></i> Reject</button>
+                </div>
+                ` : `
+                <div class="approval-actions">
+                    <button class="action-btn secondary"><i class="fas fa-eye"></i> View</button>
+                </div>
+                `}
+            `;
+            container.appendChild(card);
         });
         
         renderPagination(result.data, 'communityCreationApplicationsPagination', (p) => loadCommunityCreationApplications(status, p));
@@ -1416,14 +1656,15 @@ async function loadCommunityCreationApplications(status = 'PENDING', page = 1) {
 }
 
 function selectApprovalTab(status) {
-    const tabs = document.querySelectorAll('#approvalTabs .btn');
-    tabs.forEach(tab => {
-        tab.classList.remove('btn-primary', 'active');
-        tab.classList.add('btn-outline-primary');
-    });
+    const tabs = document.querySelectorAll('#approvalTabs .tab-btn');
+    tabs.forEach(tab => tab.classList.remove('active'));
     
-    event.target.classList.remove('btn-outline-primary');
-    event.target.classList.add('btn-primary', 'active');
+    const activeTab = Array.from(tabs).find(tab => 
+        tab.textContent.trim().toUpperCase() === status
+    );
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
     
     loadCommunityCreationApplications(status);
 }
@@ -1609,11 +1850,11 @@ function manageCommunityMembers() {
 }
 
 async function loadCommunities(page, keyword = '') {
-    const result = await CommunitiesAPI.getCommunities(page, 12, keyword);
+    const result = await CommunitiesAPI.getCommunities(page, 10, keyword);
     if (result.code === 200) {
-        const list = document.getElementById('communitiesList');
-        list.innerHTML = '';
-
+        const container = document.getElementById('communitiesList');
+        container.innerHTML = '';
+        
         const colors = [
             'linear-gradient(135deg, #673ab7, #9575cd)',
             'linear-gradient(135deg, #1e88e5, #42a5f5)',
@@ -1622,30 +1863,31 @@ async function loadCommunities(page, keyword = '') {
             'linear-gradient(135deg, #4caf50, #81c784)',
             'linear-gradient(135deg, #00bcd4, #4dd0e1)'
         ];
-
+        
         result.data.list.forEach((community, index) => {
-            const col = document.createElement('div');
-            col.className = 'col-md-3 mb-4';
-            col.innerHTML = `
-                <div class="community-card bg-white">
-                    <div class="community-banner" style="background: ${colors[index % colors.length]};"></div>
-                    <div class="p-4">
-                        <h5 class="font-bold">${community.name}</h5>
-                        <p class="text-sm text-gray-500 mb-2">${community.description || ''}</p>
-                        <div class="d-flex items-center justify-between mb-3">
-                            <span class="text-xs text-gray-500">${community.memberCount || 0} members</span>
-                            <span class="text-xs text-gray-500">${community.eventCount || 0} events</span>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-primary" onclick="viewCommunity(${community.communityId})">View</button>
-                            <button class="btn btn-sm btn-community" onclick="applyToCommunityBtn(${community.communityId}, '${community.name}')">Apply</button>
-                        </div>
+            const card = document.createElement('div');
+            card.className = 'community-card';
+            card.innerHTML = `
+                <div class="community-banner" style="background: ${colors[index % colors.length]};"></div>
+                <div class="community-logo">
+                    <span class="community-logo-text">${(community.name || 'C').charAt(0).toUpperCase()}</span>
+                </div>
+                <div class="community-content">
+                    <h3 class="community-name">${community.name}</h3>
+                    <p class="community-desc">${community.description || ''}</p>
+                    <div class="community-stats">
+                        <span class="community-stat"><i class="fas fa-users"></i> ${community.memberCount || 0} members</span>
+                        <span class="community-stat"><i class="fas fa-calendar"></i> ${community.eventCount || 0} events</span>
                     </div>
                 </div>
+                <div class="community-actions">
+                    <button class="community-action-btn view" onclick="viewCommunity(${community.communityId})"><i class="fas fa-eye"></i> View</button>
+                    <button class="community-action-btn join" onclick="applyToCommunityBtn(${community.communityId}, '${community.name}')"><i class="fas fa-paper-plane"></i> Apply</button>
+                </div>
             `;
-            list.appendChild(col);
+            container.appendChild(card);
         });
-
+        
         renderPagination(result.data, 'communitiesPagination', loadCommunities);
     }
 }
@@ -1889,7 +2131,41 @@ async function editCommunity(communityId) {
     }
 }
 
+function cleanupModalBackdrops() {
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.remove();
+    });
+    document.body.classList.remove('modal-open');
+}
+
+function initBackdropCleanupObserver() {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const el = node;
+                    if (el.classList && el.classList.contains('modal-backdrop')) {
+                        const modals = document.querySelectorAll('.modal.show');
+                        if (modals.length === 0) {
+                            el.remove();
+                            document.body.classList.remove('modal-open');
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: false
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    cleanupModalBackdrops();
+    initBackdropCleanupObserver();
+    
     setApiBase(window.API_BASE);
     initAuth();
     initWallpaper();

@@ -1,38 +1,96 @@
-<h2 class="mb-4">Welcome to EventHub</h2>
-<div class="row mb-6" id="statsRow">
-    <div class="col-md-3">
-        <div class="stat-card p-4 bg-white">
-            <div class="text-3xl mb-2"><i class="fas fa-calendar-alt text-primary"></i></div>
-            <div class="text-2xl font-bold text-gray-800" id="statUpcoming">0</div>
-            <div class="text-sm text-gray-500">Upcoming Events</div>
+<div class="welcome-section">
+    <h1 class="welcome-title">Welcome back</h1>
+    <p class="welcome-subtitle">Today has 3 new events waiting for you to discover</p>
+</div>
+
+<div class="stats-section">
+    <div class="stats-grid" id="statsRow">
+        <div class="stat-card">
+            <div class="stat-icon-bg" style="background: rgba(37, 184, 166, 0.3);"></div>
+            <div class="stat-info">
+                <div class="stat-value">128</div>
+                <div class="stat-label">Events</div>
+            </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card p-4 bg-white">
-            <div class="text-3xl mb-2"><i class="fas fa-users text-success"></i></div>
-            <div class="text-2xl font-bold text-gray-800" id="statParticipants">0</div>
-            <div class="text-sm text-gray-500">Participants</div>
+        <div class="stat-card">
+            <div class="stat-icon-bg" style="background: rgba(139, 92, 246, 0.3);"></div>
+            <div class="stat-info">
+                <div class="stat-value">1,024</div>
+                <div class="stat-label">Community Members</div>
+            </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card p-4 bg-white">
-            <div class="text-3xl mb-2"><i class="fas fa-user text-info"></i></div>
-            <div class="text-2xl font-bold text-gray-800" id="statUsers">0</div>
-            <div class="text-sm text-gray-500">Active Users</div>
+        <div class="stat-card">
+            <div class="stat-icon-bg" style="background: rgba(59, 130, 246, 0.3);"></div>
+            <div class="stat-info">
+                <div class="stat-value">5,120</div>
+                <div class="stat-label">Participants</div>
+            </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stat-card p-4 bg-white">
-            <div class="text-3xl mb-2"><i class="fas fa-tag text-warning"></i></div>
-            <div class="text-2xl font-bold text-gray-800" id="statCategories">0</div>
-            <div class="text-sm text-gray-500">Categories</div>
+        <div class="stat-card">
+            <div class="stat-icon-bg" style="background: rgba(245, 166, 35, 0.3);"></div>
+            <div class="stat-info">
+                <div class="stat-value">42</div>
+                <div class="stat-label">Hot this week</div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="mb-4 d-flex justify-content-between">
-    <h3>Upcoming Events</h3>
-    <a href="#events" onclick="showPage('events')" class="text-primary">View All &rarr;</a>
-</div>
-<div class="row" id="eventList">
+<div class="content-split">
+    <div class="events-column">
+        <div class="section-header">
+            <h2 class="section-title">Recent events</h2>
+            <a href="#events" onclick="showPage('events')" class="section-link">View all</a>
+        </div>
+        <div id="eventList" class="events-list">
+            <div class="event-card">
+                <div class="event-top">
+                    <h3 class="event-title">Frontend Tech Sharing</h3>
+                    <span class="event-badge upcoming">Upcoming</span>
+                </div>
+                <p class="event-date">Today at 19:00</p>
+            </div>
+            <div class="event-card">
+                <div class="event-top">
+                    <h3 class="event-title">Designer Meetup</h3>
+                    <span class="event-badge active">Active</span>
+                </div>
+                <p class="event-date">Tomorrow at 14:00</p>
+            </div>
+            <div class="event-card">
+                <div class="event-top">
+                    <h3 class="event-title">PM Thinking Training</h3>
+                    <span class="event-badge upcoming">Upcoming</span>
+                </div>
+                <p class="event-date">The day after tomorrow at 10:00</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="community-column">
+        <h2 class="section-title">Hot communities</h2>
+        <div id="communitiesList" class="communities-list">
+            <div class="community-card">
+                <div class="community-avatar"></div>
+                <div class="community-info">
+                    <h3 class="community-name">Frontend Dev Team</h3>
+                    <p class="community-members">320 members</p>
+                </div>
+            </div>
+            <div class="community-card">
+                <div class="community-avatar"></div>
+                <div class="community-info">
+                    <h3 class="community-name">Designers Union</h3>
+                    <p class="community-members">180 members</p>
+                </div>
+            </div>
+            <div class="community-card">
+                <div class="community-avatar"></div>
+                <div class="community-info">
+                    <h3 class="community-name">Music Lovers</h3>
+                    <p class="community-members">240 members</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

@@ -1,40 +1,40 @@
 <div id="page-home" class="page-content">
-    <h2 class="mb-4">Welcome to EventHub</h2>
-    <div class="row mb-6" id="statsRow">
-        <div class="col-md-3">
-            <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2"><i class="fas fa-calendar-alt text-primary"></i></div>
-                <div class="text-2xl font-bold text-gray-800" id="statUpcoming">0</div>
-                <div class="text-sm text-gray-500">Upcoming Events</div>
+    <div class="welcome-section mb-8">
+        <h1 class="welcome-title">Welcome back</h1>
+        <p class="welcome-subtitle">Today has 3 new events waiting for you to discover</p>
+    </div>
+
+    <div class="stats-section mb-8">
+        <div class="stats-grid">
+            <div class="stat-card p-4">
+                <div class="stat-icon-bg mb-3" style="background: rgba(37, 184, 166, 0.3);"></div>
+                <div class="stat-value" id="statUpcoming">0</div>
+                <div class="stat-label">Upcoming Events</div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2"><i class="fas fa-users text-success"></i></div>
-                <div class="text-2xl font-bold text-gray-800" id="statParticipants">0</div>
-                <div class="text-sm text-gray-500">Participants</div>
+            <div class="stat-card p-4">
+                <div class="stat-icon-bg mb-3" style="background: rgba(126, 217, 87, 0.3);"></div>
+                <div class="stat-value" id="statParticipants">0</div>
+                <div class="stat-label">Participants</div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2"><i class="fas fa-user text-info"></i></div>
-                <div class="text-2xl font-bold text-gray-800" id="statUsers">0</div>
-                <div class="text-sm text-gray-500">Active Users</div>
+            <div class="stat-card p-4">
+                <div class="stat-icon-bg mb-3" style="background: rgba(59, 130, 246, 0.3);"></div>
+                <div class="stat-value" id="statUsers">0</div>
+                <div class="stat-label">Active Users</div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2"><i class="fas fa-tag text-warning"></i></div>
-                <div class="text-2xl font-bold text-gray-800" id="statCategories">0</div>
-                <div class="text-sm text-gray-500">Categories</div>
+            <div class="stat-card p-4">
+                <div class="stat-icon-bg mb-3" style="background: rgba(245, 166, 35, 0.3);"></div>
+                <div class="stat-value" id="statCategories">0</div>
+                <div class="stat-label">Categories</div>
             </div>
         </div>
     </div>
 
-    <div class="mb-4 d-flex justify-content-between">
-        <h3>Upcoming Events</h3>
-        <a href="#events" onclick="showPage('events')" class="text-primary">View All &rarr;</a>
-    </div>
-    <div class="row" id="eventList">
+    <div class="mb-6">
+        <div class="d-flex justify-content-between mb-4">
+            <h3 class="section-title">Upcoming Events</h3>
+            <a href="#events" onclick="showPage('events')" class="section-link">View All &rarr;</a>
+        </div>
+        <div class="row" id="eventList">
+        </div>
     </div>
 </div>
