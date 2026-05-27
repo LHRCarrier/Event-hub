@@ -22,14 +22,4 @@
     <select id="countPendingApplicationsByCommunity" resultType="java.lang.Integer">
         SELECT COUNT(*) FROM community_applications WHERE community_id = #{communityId} AND status = 'PENDING'
     </select>
-    <update id="updateById">
-        UPDATE community_applications
-        <set>
-            <if test="status != null">status = #{status},</if>
-            <if test="approveTime != null">approve_time = #{approveTime},</if>
-            <if test="approveBy != null">approve_by = #{approveBy},</if>
-            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
-        </set>
-        WHERE application_id = #{applicationId}
-    </update>
 </mapper>

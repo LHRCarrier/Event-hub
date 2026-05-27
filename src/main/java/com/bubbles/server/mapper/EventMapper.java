@@ -60,4 +60,10 @@ public interface EventMapper extends BaseMapper<Event> {
 
     @Select("SELECT * FROM events WHERE community_id = #{communityId} AND status = #{status} ORDER BY date DESC")
     List<Event> findByCommunityIdAndStatus(@Param("communityId") Integer communityId, @Param("status") String status);
+
+    @Select("SELECT c.name, COUNT(e.event_id) as count FROM categories c LEFT JOIN events e ON c.category_id = e.category_id GROUP BY c.category_id, c.name ORDER BY count DESC")
+    List<java.util.Map<String, Object>> countEventsByCategory();
+
+    @Select("SELECT e.name, e.create_time as time FROM events e ORDER BY e.create_time DESC LIMIT #{limit}")
+    List<java.util.Map<String, Object>> findRecentEvents(@Param("limit") int limit);
 }

@@ -15,6 +15,7 @@ public class CommunityResponse {
     private Integer memberCount;
     private Integer eventCount;
     private String role;
+    private Integer creatorId;
     private Date joinTime;
     private Date createTime;
     private Date updateTime;
@@ -83,6 +84,14 @@ public class CommunityResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Integer getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Integer creatorId) {
+        this.creatorId = creatorId;
     }
 
     public Date getJoinTime() {

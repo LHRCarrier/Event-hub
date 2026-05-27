@@ -1,5 +1,6 @@
 let currentUser = null;
 let currentCommunityId = null;
+let currentCommunityFilter = 'all';
 let charts = {};
 
 const WALLPAPERS = {
@@ -119,7 +120,7 @@ function showPage(pageName) {
     } else if (pageName === 'profile') {
         loadProfile();
     } else if (pageName === 'communities') {
-        loadCommunities(1);
+        loadCommunities(1, '', currentCommunityFilter);
     } else if (pageName === 'community-members') {
         loadCommunityMembers(1);
     } else if (pageName === 'applications') {
@@ -628,64 +629,21 @@ async function loadDashboard() {
         document.getElementById('dbTotalRegistrations').textContent = formatNumber(data.totalRegistrations);
         document.getElementById('dbTotalEvents').textContent = formatNumber(data.totalEvents);
         document.getElementById('dbTotalUsers').textContent = formatNumber(data.totalUsers);
-        
-        const growthRate = calculateGrowthRate(data.totalRegistrations || 0, data.totalEvents || 0);
-        document.getElementById('dbGrowthRate').textContent = '+' + growthRate + '%';
+        document.getElementById('dbGrowthRate').textContent = '+' + (data.activeUsers || 0) + '%';
     }
-    
-    initDashboardCharts();
-    
-    const activities = document.getElementById('recentActivities');
-    activities.innerHTML = `
-        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
-            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-user-plus text-primary"></i>
-            </div>
-            <div class="flex-grow-1 min-w-0">
-                <p class="font-medium mb-0">New user registered</p>
-                <p class="text-sm text-gray-500 mb-0">John Doe joined EventHub</p>
-            </div>
-            <div class="flex-shrink-0 ml-3">
-                <span class="text-xs text-gray-400">2 minutes ago</span>
-            </div>
-        </div>
-        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
-            <div class="flex-shrink-0 w-10 h-10 bg-success/10 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-calendar-plus text-success"></i>
-            </div>
-            <div class="flex-grow-1 min-w-0">
-                <p class="font-medium mb-0">New event created</p>
-                <p class="text-sm text-gray-500 mb-0">Tech Conference 2024</p>
-            </div>
-            <div class="flex-shrink-0 ml-3">
-                <span class="text-xs text-gray-400">15 minutes ago</span>
-            </div>
-        </div>
-        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
-            <div class="flex-shrink-0 w-10 h-10 bg-info/10 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-file-check text-info"></i>
-            </div>
-            <div class="flex-grow-1 min-w-0">
-                <p class="font-medium mb-0">Registration approved</p>
-                <p class="text-sm text-gray-500 mb-0">Approved for Summer Festival</p>
-            </div>
-            <div class="flex-shrink-0 ml-3">
-                <span class="text-xs text-gray-400">30 minutes ago</span>
-            </div>
-        </div>
-        <div class="d-flex items-center p-3 bg-gray-50 rounded-lg">
-            <div class="flex-shrink-0 w-10 h-10 bg-warning/10 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-users text-warning"></i>
-            </div>
-            <div class="flex-grow-1 min-w-0">
-                <p class="font-medium mb-0">New community created</p>
-                <p class="text-sm text-gray-500 mb-0">Photography Club</p>
-            </div>
-            <div class="flex-shrink-0 ml-3">
-                <span class="text-xs text-gray-400">1 hour ago</span>
-            </div>
-        </div>
-    `;
+
+    const chartResult = await DashboardAPI.getChartData();
+    if (chartResult.code === 200 && chartResult.data) {
+        const chartData = chartResult.data;
+        initDashboardCharts(chartData);
+        if (chartData.trendData && chartData.trendData.length >= 2) {
+            const first = chartData.trendData[0].count;
+            const last = chartData.trendData[chartData.trendData.length - 1].count;
+            const growth = first > 0 ? (((last - first) / first) * 100).toFixed(1) : 0;
+            document.getElementById('dbGrowthRate').textContent = (growth >= 0 ? '+' : '') + growth + '%';
+        }
+        renderRecentActivities(chartData.recentActivities || []);
+    }
 }
 
 function formatNumber(num) {
@@ -696,16 +654,12 @@ function formatNumber(num) {
     return num.toString();
 }
 
-function calculateGrowthRate(registrations, events) {
-    return ((registrations / Math.max(events, 1)) * 10).toFixed(1);
-}
+function initDashboardCharts(chartData) {
+    initTrendChart(chartData.trendData || []);
+    initCategoryChart(chartData.categoryStats || []);
+    initCommunityChart(chartData.communityStats || []);
+    initStatusChart(chartData.statusStats || []);
 
-function initDashboardCharts() {
-    initTrendChart();
-    initCategoryChart();
-    initCommunityChart();
-    initStatusChart();
-    
     window.addEventListener('resize', function() {
         Object.keys(charts).forEach(key => {
             charts[key]?.resize();
@@ -713,17 +667,32 @@ function initDashboardCharts() {
     });
 }
 
-function initTrendChart() {
-    const chartDom = document.getElementById('trendChart');
+var COLORS = ['#4f46e5', '#f97316', '#ec4899', '#22c55e', '#06b6d4', '#a855f7', '#f59e0b', '#ef4444', '#3b82f6', '#6b7280'];
+
+function formatMonthLabel(ym) {
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var parts = ym.split('-');
+    if (parts.length === 2) {
+        var m = parseInt(parts[1]) - 1;
+        return months[m] || ym;
+    }
+    return ym;
+}
+
+function initTrendChart(data) {
+    var chartDom = document.getElementById('trendChart');
     if (!chartDom) return;
-    
+
     if (charts['trendChart']) {
         charts['trendChart'].dispose();
     }
-    
+
     charts['trendChart'] = echarts.init(chartDom);
-    
-    const option = {
+
+    var months = data.map(function(d) { return formatMonthLabel(d.month); });
+    var values = data.map(function(d) { return d.count; });
+
+    var option = {
         tooltip: {
             trigger: 'axis',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -739,7 +708,7 @@ function initTrendChart() {
         },
         xAxis: {
             type: 'category',
-            data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            data: months,
             axisLine: { lineStyle: { color: '#e0e0e0' } },
             axisLabel: { color: '#666' }
         },
@@ -754,7 +723,7 @@ function initTrendChart() {
                 name: 'Registrations',
                 type: 'line',
                 smooth: true,
-                data: [180, 220, 150, 320, 450, 580, 620, 550, 480, 380, 320, 410],
+                data: values,
                 lineStyle: { color: '#4f46e5', width: 3 },
                 itemStyle: { color: '#4f46e5' },
                 areaStyle: {
@@ -768,21 +737,26 @@ function initTrendChart() {
             }
         ]
     };
-    
+
     charts['trendChart'].setOption(option);
 }
 
-function initCategoryChart() {
-    const chartDom = document.getElementById('categoryChart');
+function initCategoryChart(data) {
+    var chartDom = document.getElementById('categoryChart');
     if (!chartDom) return;
-    
+
     if (charts['categoryChart']) {
         charts['categoryChart'].dispose();
     }
-    
+
     charts['categoryChart'] = echarts.init(chartDom);
-    
-    const option = {
+
+    var pieData = data.map(function(d, i) {
+        var hue = (i * 360 / data.length) % 360;
+        return { value: d.count, name: d.name, itemStyle: { color: 'hsl(' + hue + ', 70%, 50%)' } };
+    });
+
+    var option = {
         tooltip: {
             trigger: 'item',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -819,34 +793,28 @@ function initCategoryChart() {
                     }
                 },
                 labelLine: { show: false },
-                data: [
-                    { value: 55, name: 'Technology', itemStyle: { color: '#4f46e5' } },
-                    { value: 38, name: 'Sports', itemStyle: { color: '#f97316' } },
-                    { value: 30, name: 'Cultural', itemStyle: { color: '#ec4899' } },
-                    { value: 25, name: 'Art', itemStyle: { color: '#22c55e' } },
-                    { value: 18, name: 'Business', itemStyle: { color: '#06b6d4' } },
-                    { value: 15, name: 'Education', itemStyle: { color: '#a855f7' } },
-                    { value: 12, name: 'Music', itemStyle: { color: '#f59e0b' } },
-                    { value: 8, name: 'Other', itemStyle: { color: '#6b7280' } }
-                ]
+                data: pieData
             }
         ]
     };
-    
+
     charts['categoryChart'].setOption(option);
 }
 
-function initCommunityChart() {
-    const chartDom = document.getElementById('communityChart');
+function initCommunityChart(data) {
+    var chartDom = document.getElementById('communityChart');
     if (!chartDom) return;
-    
+
     if (charts['communityChart']) {
         charts['communityChart'].dispose();
     }
-    
+
     charts['communityChart'] = echarts.init(chartDom);
-    
-    const option = {
+
+    var names = data.map(function(d) { return d.name; });
+    var values = data.map(function(d) { return d.memberCount; });
+
+    var option = {
         tooltip: {
             trigger: 'axis',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -863,9 +831,16 @@ function initCommunityChart() {
         },
         xAxis: {
             type: 'category',
-            data: ['Tech Club', 'Photography', 'Music', 'Sports', 'Book Club', 'Art'],
+            data: names,
             axisLine: { lineStyle: { color: '#e0e0e0' } },
-            axisLabel: { color: '#666', interval: 0, rotate: 15 }
+            axisLabel: {
+                color: '#666',
+                interval: 0,
+                rotate: names.length > 6 ? 15 : 0,
+                formatter: function(val) {
+                    return val.length > 12 ? val.substring(0, 12) + '...' : val;
+                }
+            }
         },
         yAxis: {
             type: 'value',
@@ -875,10 +850,10 @@ function initCommunityChart() {
         },
         series: [
             {
-                name: 'Active Members',
+                name: 'Members',
                 type: 'bar',
                 barWidth: '50%',
-                data: [156, 89, 124, 145, 67, 78],
+                data: values,
                 itemStyle: {
                     borderRadius: [6, 6, 0, 0],
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -889,21 +864,37 @@ function initCommunityChart() {
             }
         ]
     };
-    
+
     charts['communityChart'].setOption(option);
 }
 
-function initStatusChart() {
-    const chartDom = document.getElementById('statusChart');
+function initStatusChart(data) {
+    var chartDom = document.getElementById('statusChart');
     if (!chartDom) return;
-    
+
     if (charts['statusChart']) {
         charts['statusChart'].dispose();
     }
-    
+
     charts['statusChart'] = echarts.init(chartDom);
-    
-    const option = {
+
+    var statusColors = {
+        'APPROVED': '#22c55e',
+        'REGISTERED': '#22c55e',
+        'PENDING': '#f59e0b',
+        'CANCELLED': '#ef4444',
+        'REJECTED': '#6b7280'
+    };
+
+    var pieData = data.map(function(d) {
+        return {
+            value: d.count,
+            name: d.status.charAt(0).toUpperCase() + d.status.slice(1).toLowerCase(),
+            itemStyle: { color: statusColors[d.status.toUpperCase()] || COLORS[Math.floor(Math.random() * COLORS.length)] }
+        };
+    });
+
+    var option = {
         tooltip: {
             trigger: 'item',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -923,17 +914,53 @@ function initStatusChart() {
                     fontSize: 12
                 },
                 labelLine: { show: true },
-                data: [
-                    { value: 1850, name: 'Approved', itemStyle: { color: '#22c55e' } },
-                    { value: 620, name: 'Pending', itemStyle: { color: '#f59e0b' } },
-                    { value: 280, name: 'Cancelled', itemStyle: { color: '#ef4444' } },
-                    { value: 97, name: 'Rejected', itemStyle: { color: '#6b7280' } }
-                ]
+                data: pieData
             }
         ]
     };
-    
+
     charts['statusChart'].setOption(option);
+}
+
+var ACTIVITY_ICONS = {
+    'registration': { icon: 'fa-user-plus', color: 'primary' },
+    'event': { icon: 'fa-calendar-plus', color: 'success' },
+    'community': { icon: 'fa-users', color: 'warning' }
+};
+
+function renderRecentActivities(activities) {
+    var container = document.getElementById('recentActivities');
+    if (!container) return;
+
+    if (!activities || activities.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activities</p>';
+        return;
+    }
+
+    var html = '';
+    activities.forEach(function(a) {
+        var meta = ACTIVITY_ICONS[a.type] || ACTIVITY_ICONS['event'];
+        html += '<div class="d-flex items-center p-3 bg-gray-50 rounded-lg">' +
+            '<div class="flex-shrink-0 w-10 h-10 bg-' + meta.color + '/10 rounded-full flex items-center justify-center mr-3">' +
+                '<i class="fas ' + meta.icon + ' text-' + meta.color + '"></i>' +
+            '</div>' +
+            '<div class="flex-grow-1 min-w-0">' +
+                '<p class="font-medium mb-0">' + escapeHtml(a.title) + '</p>' +
+                '<p class="text-sm text-gray-500 mb-0">' + escapeHtml(a.description || '') + '</p>' +
+            '</div>' +
+            '<div class="flex-shrink-0 ml-3">' +
+                '<span class="text-xs text-gray-400">' + escapeHtml(a.time) + '</span>' +
+            '</div>' +
+        '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 async function loadRegistrations() {
@@ -1093,86 +1120,93 @@ function updateHeaderAvatar(avatarUrl, username) {
 function initUserMenu() {
     const container = document.getElementById('userMenuContainer');
     const avatarWrapper = document.getElementById('avatarWrapper');
+    const avatarInner = document.getElementById('avatarInner');
     const menu = document.getElementById('userMenu');
-    const headerAvatar = document.getElementById('headerAvatar');
-    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
-    
+
     if (!container || !avatarWrapper || !menu) return;
-    
-    avatarWrapper.addEventListener('mouseenter', () => {
-        // 隐藏小头像，显示大菜单
-        if (headerAvatar) {
-            headerAvatar.style.opacity = '0';
+
+    // Move menu to body to escape sidebar clipping and stacking contexts
+    if (menu.parentElement) {
+        document.body.appendChild(menu);
+    }
+    menu.style.position = 'fixed';
+
+    let hideTimeout = null;
+    let hovering = false;
+
+    function positionMenu() {
+        const avatarRect = avatarWrapper.getBoundingClientRect();
+        // Center menu horizontally on the avatar
+        menu.style.left = (avatarRect.left + avatarRect.width / 2 - 150) + 'px';
+        // Align protruding avatar center (menuTop - 2px) with navbar avatar center
+        menu.style.top = (avatarRect.top + avatarRect.height / 2 + 2) + 'px';
+    }
+
+    function showMenu() {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+        hovering = true;
+
+        positionMenu();
+
+        // Hide navbar avatar — the menu's protruding avatar replaces it
+        if (avatarInner) {
+            avatarInner.style.opacity = '0';
+            avatarInner.style.transform = 'scale(1.15)';
+            avatarInner.style.borderColor = 'rgba(37, 184, 166, 0.6)';
+            avatarInner.style.boxShadow = '0 0 16px rgba(37, 184, 166, 0.35)';
         }
-        if (headerAvatarInitial) {
-            headerAvatarInitial.style.opacity = '0';
-        }
-        
+
         menu.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
-        menu.classList.add('opacity-100', 'visible', 'pointer-events-auto');
-        menu.style.transform = 'translate(0, 0) scale(1)';
-    });
-    
-    menu.addEventListener('mouseleave', () => {
-        // 隐藏大菜单，显示小头像
-        menu.style.transform = 'translate(-24px, -64px) scale(0.4)';
-        setTimeout(() => {
-            menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
-            menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
-            if (headerAvatar) {
-                headerAvatar.style.opacity = '1';
+        menu.style.opacity = '1';
+        menu.style.visibility = 'visible';
+        menu.style.pointerEvents = 'auto';
+        menu.style.transform = 'scale(1)';
+    }
+
+    function hideMenu() {
+        clearTimeout(hideTimeout);
+        hovering = false;
+
+        // Restore navbar avatar
+        if (avatarInner) {
+            avatarInner.style.opacity = '1';
+            avatarInner.style.transform = 'scale(1)';
+            avatarInner.style.borderColor = 'transparent';
+            avatarInner.style.boxShadow = 'none';
+        }
+
+        menu.style.opacity = '0';
+        menu.style.transform = 'scale(0.6)';
+        hideTimeout = setTimeout(() => {
+            if (!hovering) {
+                menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
             }
-            if (headerAvatarInitial) {
-                headerAvatarInitial.style.opacity = '1';
-            }
-        }, 250);
-    });
-    
-    container.addEventListener('mouseleave', () => {
-        // 隐藏大菜单，显示小头像
-        menu.style.transform = 'translate(-24px, -64px) scale(0.4)';
-        setTimeout(() => {
-            const menuRect = menu.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const mouseX = window.lastMouseX || 0;
-            const mouseY = window.lastMouseY || 0;
-            if (!(mouseX >= menuRect.left && mouseX <= menuRect.right && mouseY >= menuRect.top && mouseY <= menuRect.bottom)) {
-                if (!(mouseX >= containerRect.left && mouseX <= containerRect.right && mouseY >= containerRect.top && mouseY <= containerRect.bottom)) {
-                    menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
-                    menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
-                    if (headerAvatar) {
-                        headerAvatar.style.opacity = '1';
-                    }
-                    if (headerAvatarInitial) {
-                        headerAvatarInitial.style.opacity = '1';
-                    }
-                }
-            }
-        }, 250);
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-        window.lastMouseX = e.clientX;
-        window.lastMouseY = e.clientY;
-    });
+        }, 350);
+    }
+
+    avatarWrapper.addEventListener('mouseenter', showMenu);
+    menu.addEventListener('mouseenter', showMenu);
+    menu.addEventListener('mouseleave', hideMenu);
+    container.addEventListener('mouseleave', hideMenu);
+    window.addEventListener('resize', () => { if (hovering) positionMenu(); });
 }
 
 function closeUserMenu() {
     const menu = document.getElementById('userMenu');
-    const headerAvatar = document.getElementById('headerAvatar');
-    const headerAvatarInitial = document.getElementById('headerAvatarInitial');
+    const avatarInner = document.getElementById('avatarInner');
     if (menu) {
-        menu.style.transform = 'translate(-24px, -64px) scale(0.4)';
+        if (avatarInner) {
+            avatarInner.style.opacity = '1';
+            avatarInner.style.transform = 'scale(1)';
+            avatarInner.style.borderColor = 'transparent';
+            avatarInner.style.boxShadow = 'none';
+        }
+        menu.style.opacity = '0';
+        menu.style.transform = 'scale(0.6)';
         setTimeout(() => {
-            menu.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
             menu.classList.add('opacity-0', 'invisible', 'pointer-events-none');
-            if (headerAvatar) {
-                headerAvatar.style.opacity = '1';
-            }
-            if (headerAvatarInitial) {
-                headerAvatarInitial.style.opacity = '1';
-            }
-        }, 250);
+        }, 350);
     }
 }
 
@@ -1180,9 +1214,10 @@ let selectedAvatarFile = null;
 
 function initAvatarUpload() {
     const avatarContainer = document.getElementById('avatarContainer');
+    if (!avatarContainer) return;
     const avatarFileInput = document.getElementById('avatarFileInput');
     const confirmUploadBtn = document.getElementById('confirmUploadBtn');
-    
+
     avatarContainer.addEventListener('click', () => {
         avatarFileInput.click();
     });
@@ -1438,159 +1473,119 @@ function renderPagination(data, containerId, loadFunction) {
 
 async function loadMyApplications() {
     if (!currentUser) return;
-    
-    await loadJoinApplications();
-    await loadCreateApplications();
+    switchApplicationTab('join');
+}
+
+function switchApplicationTab(tabName) {
+    document.querySelectorAll('#page-applications .tab-panel').forEach(el => el.classList.add('d-none'));
+    document.querySelectorAll('#page-applications .tab-btn').forEach(el => el.classList.remove('active'));
+
+    const panel = document.getElementById('tab-applications-' + tabName);
+    if (panel) panel.classList.remove('d-none');
+
+    const btn = document.querySelector('#page-applications .tab-btn[onclick="switchApplicationTab(\'' + tabName + '\')"]');
+    if (btn) btn.classList.add('active');
+
+    if (tabName === 'join') {
+        loadJoinApplications(1);
+    } else if (tabName === 'create') {
+        loadCreateApplicationsPage(1);
+    }
 }
 
 async function loadJoinApplications(page = 1) {
+    if (!currentUser) return;
     const result = await CommunityApplicationsAPI.getUserApplications(currentUser.userId, page, 10);
     if (result.code === 200) {
         const container = document.getElementById('joinApplicationsList');
-        
+        container.innerHTML = '';
+
         if (!result.data.list || result.data.list.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <p class="empty-state-text">No join applications</p>
-                </div>
-            `;
+                    <div class="text-4xl mb-3">📋</div>
+                    <p>No join applications</p>
+                </div>`;
             return;
         }
-        
-        container.innerHTML = '';
+
         const colors = [
             'rgba(37, 184, 166, 0.3)',
             'rgba(126, 217, 87, 0.3)',
-            'rgba(59, 130, 246, 0.3)'
+            'rgba(59, 130, 246, 0.3)',
+            'rgba(139, 92, 246, 0.3)'
         ];
-        
+
         result.data.list.forEach((app, index) => {
             const card = document.createElement('div');
             card.className = 'application-card';
             card.innerHTML = `
-                <div class="application-icon" style="background: ${colors[index % colors.length]};">
-                    <i class="fas fa-users" style="color: var(--primary-color);"></i>
-                </div>
-                <div class="application-content">
-                    <h3 class="application-title">${app.communityName || 'Community'}</h3>
-                    <p class="application-desc">Applying to join this community</p>
-                    <div class="application-meta">
-                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
-                        <span class="application-status ${app.status.toLowerCase()}">${app.status}</span>
-                    </div>
-                </div>
-                ${app.status === 'PENDING' ? `
-                <div class="application-actions">
-                    <button class="action-btn cancel"><i class="fas fa-times"></i></button>
-                </div>
-                ` : ''}
-            `;
-            container.appendChild(card);
-        });
-    }
-}
-
-async function loadCreateApplications() {
-    const result = await CommunityApplicationsAPI.getUserCommunityApplications(currentUser.userId);
-    if (result.code === 200) {
-        const container = document.getElementById('createApplicationsList');
-        
-        if (!result.data || result.data.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📝</div>
-                    <p class="empty-state-text">No creation applications</p>
-                </div>
-            `;
-            return;
-        }
-        
-        container.innerHTML = '';
-        const colors = [
-            'rgba(139, 92, 246, 0.3)',
-            'rgba(245, 166, 35, 0.3)',
-            'rgba(232, 116, 116, 0.3)'
-        ];
-        
-        result.data.forEach((app, index) => {
-            const card = document.createElement('div');
-            card.className = 'application-card';
-            card.innerHTML = `
-                <div class="application-icon" style="background: ${colors[index % colors.length]};">
-                    <i class="fas fa-plus-circle" style="color: #a78bfa;"></i>
-                </div>
-                <div class="application-content">
-                    <h3 class="application-title">${app.name || 'Community'}</h3>
-                    <p class="application-desc">Creating a new community</p>
-                    <div class="application-meta">
-                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
-                        <span class="application-status ${app.status.toLowerCase()}">${app.status}</span>
-                    </div>
-                </div>
-                ${app.status === 'PENDING' ? `
-                <div class="application-actions">
-                    <button class="action-btn cancel"><i class="fas fa-times"></i></button>
-                </div>
-                ` : ''}
-            `;
-            container.appendChild(card);
-        });
-    }
-}
-
-async function loadAdminApplications(status = 'PENDING', page = 1) {
-    const communityId = currentCommunityId || 1;
-    const result = await CommunityApplicationsAPI.getCommunityApplications(communityId, page, 10, status);
-    if (result.code === 200) {
-        const container = document.getElementById('adminApplicationsList');
-        container.innerHTML = '';
-        
-        if (!result.data.list || result.data.list.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state" style="grid-column: 1 / -1;">
-                    <div class="empty-state-icon">📋</div>
-                    <p class="empty-state-text">No applications</p>
-                </div>
-            `;
-            return;
-        }
-        
-        const colors = [
-            'rgba(245, 166, 35, 0.3)',
-            'rgba(37, 184, 166, 0.3)',
-            'rgba(126, 217, 87, 0.3)'
-        ];
-        
-        result.data.list.forEach((app, index) => {
-            const card = document.createElement('div');
-            card.className = 'admin-application-card';
-            card.innerHTML = `
-                <div class="admin-app-header">
+                <div class="app-header">
                     <div class="app-icon" style="background: ${colors[index % colors.length]};">
-                        <i class="fas fa-building" style="color: #fbbf24;"></i>
+                        <i class="fas fa-users" style="color: var(--primary-color);"></i>
                     </div>
                     <span class="app-status ${app.status.toLowerCase()}">${app.status}</span>
                 </div>
-                <div class="admin-app-content">
-                    <h3 class="app-title">${app.communityName || 'Community'}</h3>
-                    <p class="app-desc">${app.message || 'Application to join'}</p>
+                <div class="app-content">
+                    <h3 class="app-name">${app.communityName || 'Community'}</h3>
+                    <p class="app-desc">Applying to join this community</p>
                     <div class="app-meta">
-                        <span class="meta-item"><i class="fas fa-user"></i> ${app.username || 'User'}</span>
                         <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
                     </div>
                 </div>
-                ${app.status === 'PENDING' ? `
-                <div class="admin-app-actions">
-                    <button class="action-btn approve" onclick="approveCommunityApplication(${app.applicationId}, 'APPROVED')"><i class="fas fa-check"></i> Approve</button>
-                    <button class="action-btn reject" onclick="showRejectModal(${app.applicationId})"><i class="fas fa-times"></i> Reject</button>
-                </div>
-                ` : ''}
             `;
             container.appendChild(card);
         });
-        
-        renderPagination(result.data, 'adminApplicationsPagination', (p) => loadAdminApplications(status, p));
+
+        renderPagination(result.data, 'joinApplicationsPagination', loadJoinApplications);
+    }
+}
+
+async function loadCreateApplicationsPage(page = 1) {
+    if (!currentUser) return;
+    const result = await CommunityApplicationsAPI.getUserCommunityApplications(currentUser.userId);
+    if (result.code === 200) {
+        const container = document.getElementById('createApplicationsList');
+        container.innerHTML = '';
+
+        const list = Array.isArray(result.data) ? result.data : (result.data && result.data.list) || [];
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="text-4xl mb-3">📝</div>
+                    <p>No creation applications</p>
+                </div>`;
+            return;
+        }
+
+        const colors = [
+            'rgba(139, 92, 246, 0.3)',
+            'rgba(245, 166, 35, 0.3)',
+            'rgba(232, 116, 116, 0.3)',
+            'rgba(59, 130, 246, 0.3)'
+        ];
+
+        list.forEach((app, index) => {
+            const card = document.createElement('div');
+            card.className = 'application-card';
+            card.innerHTML = `
+                <div class="app-header">
+                    <div class="app-icon" style="background: ${colors[index % colors.length]};">
+                        <i class="fas fa-plus-circle" style="color: #a78bfa;"></i>
+                    </div>
+                    <span class="app-status ${(app.status || '').toLowerCase()}">${app.status || 'PENDING'}</span>
+                </div>
+                <div class="app-content">
+                    <h3 class="app-name">${app.name || 'Community'}</h3>
+                    <p class="app-desc">${app.description || 'Community creation request'}</p>
+                    <div class="app-meta">
+                        <span class="meta-item"><i class="fas fa-calendar"></i> ${formatDate(app.applyTime)}</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
     }
 }
 
@@ -1673,7 +1668,7 @@ async function approveCommunityApplication(applicationId, status) {
     const result = await CommunityApplicationsAPI.approveCommunityApplication(applicationId, { status });
     if (result.code === 200) {
         alert('Application approved successfully');
-        loadAdminApplications('PENDING');
+        loadCommunityCreationApplications('PENDING');
     } else {
         alert(result.message);
     }
@@ -1690,7 +1685,7 @@ async function rejectCommunityApplication(applicationId, reason) {
     const result = await CommunityApplicationsAPI.approveCommunityApplication(applicationId, { status: 'REJECTED', rejectReason: reason });
     if (result.code === 200) {
         alert('Application rejected');
-        loadAdminApplications('PENDING');
+        loadCommunityCreationApplications('PENDING');
     } else {
         alert(result.message);
     }
@@ -1729,17 +1724,17 @@ async function viewCommunityHome(communityId) {
     if (result.code === 200) {
         const data = result.data;
         const community = data.community;
-        
+
         document.getElementById('communityName').textContent = community.name;
         document.getElementById('communityDescription').textContent = community.description || '';
-        
+
         if (data.stats) {
             document.getElementById('statCommunityMembers').textContent = data.stats.totalMembers || 0;
             document.getElementById('statCommunityEvents').textContent = data.stats.totalEvents || 0;
             document.getElementById('statCommunityRegistrations').textContent = data.stats.totalRegistrations || 0;
             document.getElementById('statCommunityUpcoming').textContent = data.stats.upcomingEvents || 0;
         }
-        
+
         if (data.recentEvents && data.recentEvents.length > 0) {
             const container = document.getElementById('communityRecentEvents');
             container.innerHTML = '';
@@ -1750,7 +1745,7 @@ async function viewCommunityHome(communityId) {
                 container.appendChild(div);
             });
         }
-        
+
         if (data.recentMembers && data.recentMembers.length > 0) {
             const container = document.getElementById('communityNewMembers');
             container.innerHTML = '';
@@ -1764,10 +1759,27 @@ async function viewCommunityHome(communityId) {
                 container.appendChild(div);
             });
         }
-        
+
+        const isAdmin = data.role === 'ADMIN';
+        const btnCreateEvent = document.getElementById('btnCreateCommunityEvent');
+        const thMemberActions = document.getElementById('thMemberActions');
+        const tabBtnApplications = document.getElementById('tabBtnApplications');
+
+        if (btnCreateEvent) btnCreateEvent.style.display = isAdmin ? '' : 'none';
+        if (thMemberActions) thMemberActions.style.display = isAdmin ? '' : 'none';
+        if (tabBtnApplications) tabBtnApplications.style.display = isAdmin ? '' : 'none';
+
+        sessionStorage.setItem('communityRole_' + communityId, data.role || 'MEMBER');
+
         showPage('community-home');
+        switchCommunityTab('overview');
+
+        if (isAdmin) {
+            loadPendingApplicationsCount(communityId);
+        }
     } else if (result.code === 403) {
         alert('You need to join this community first');
+        showPage('communities');
     }
 }
 
@@ -1776,6 +1788,244 @@ function goBackToCommunityHome() {
         viewCommunityHome(currentCommunityId);
     } else {
         showPage('communities');
+    }
+}
+
+function switchCommunityTab(tabName) {
+    document.querySelectorAll('#page-community-home .tab-panel').forEach(el => el.classList.add('d-none'));
+    document.querySelectorAll('#page-community-home .tab-btn').forEach(el => el.classList.remove('active'));
+
+    const panel = document.getElementById('tab-' + tabName);
+    if (panel) panel.classList.remove('d-none');
+
+    const btn = document.querySelector('#page-community-home .tab-btn[data-tab="' + tabName + '"]');
+    if (btn) btn.classList.add('active');
+
+    if (tabName === 'events') {
+        loadCommunityEventsTab(1);
+    } else if (tabName === 'members') {
+        loadCommunityMembersTab(1);
+    } else if (tabName === 'applications') {
+        loadCommunityApplicationsTab(1);
+    }
+}
+
+async function loadCommunityEventsTab(page) {
+    if (!currentCommunityId) return;
+    const result = await CommunitiesAPI.getCommunityEvents(currentCommunityId, page, 10);
+    if (result.code === 200) {
+        const container = document.getElementById('communityEventsList');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const colors = [
+            'linear-gradient(135deg, #1e88e5, #42a5f5)',
+            'linear-gradient(135deg, #ff9800, #ffb74d)',
+            'linear-gradient(135deg, #e91e63, #f48fb1)',
+            'linear-gradient(135deg, #4caf50, #81c784)'
+        ];
+
+        const role = sessionStorage.getItem('communityRole_' + currentCommunityId) || 'MEMBER';
+        const isAdmin = role === 'ADMIN';
+
+        if (result.data.list && result.data.list.length > 0) {
+            result.data.list.forEach((event, index) => {
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                card.innerHTML = `
+                    <div class="event-banner" style="background: ${colors[index % colors.length]};"></div>
+                    <div class="event-content">
+                        <h3 class="event-title">${event.name}</h3>
+                        <p class="event-desc">${event.description || ''}</p>
+                        <div class="event-meta">
+                            <span class="event-meta-item"><i class="fas fa-calendar"></i> ${formatDate(event.date)}</span>
+                            <span class="event-meta-item"><i class="fas fa-map-marker-alt"></i> ${event.location || '-'}</span>
+                        </div>
+                    </div>
+                    <span class="event-badge ${(event.status || '').toLowerCase()}">${event.status || 'UPCOMING'}</span>
+                    <div class="event-actions">
+                        <button class="event-action-btn" onclick="viewEvent(${event.eventId})"><i class="fas fa-eye"></i> View</button>
+                        ${isAdmin ? `<button class="event-action-btn" onclick="editCommunityEvent(${event.eventId})"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="event-action-btn danger" onclick="deleteCommunityEvent(${event.eventId})"><i class="fas fa-trash"></i> Delete</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8"><div class="text-3xl mb-2">📅</div><p>No events in this community yet</p></div>';
+        }
+
+        renderPagination(result.data, 'communityEventsPagination', loadCommunityEventsTab);
+    }
+}
+
+async function loadCommunityMembersTab(page) {
+    if (!currentCommunityId) return;
+    const result = await CommunitiesAPI.getCommunityMembers(currentCommunityId, page, 10);
+    if (result.code === 200) {
+        const tbody = document.getElementById('communityMembersTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const role = sessionStorage.getItem('communityRole_' + currentCommunityId) || 'MEMBER';
+        const isAdmin = role === 'ADMIN';
+
+        if (result.data.list && result.data.list.length > 0) {
+            result.data.list.forEach(member => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full d-flex align-items-center justify-content-center text-white text-sm me-2">${(member.username || 'U').charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="font-medium">${member.username}</div>
+                                <div class="text-sm text-gray-500">${member.realName || ''}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge ${member.role === 'ADMIN' ? 'bg-primary' : 'bg-secondary'}">${member.role}</span></td>
+                    <td>${formatDate(member.joinTime)}</td>
+                    ${isAdmin ? `<td>
+                        <div class="d-flex gap-2">
+                            ${member.role !== 'ADMIN' ? `<button class="btn btn-sm btn-outline-primary" onclick="promoteCommunityMember(${member.memberId})"><i class="fas fa-arrow-up"></i></button>` : ''}
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeCommunityMember(${member.memberId})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>` : ''}
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">No members found</td></tr>';
+        }
+
+        renderPagination(result.data, 'communityMembersPagination', loadCommunityMembersTab);
+    }
+}
+
+async function loadCommunityApplicationsTab(page) {
+    if (!currentCommunityId) return;
+    const result = await CommunityApplicationsAPI.getCommunityApplications(currentCommunityId, page, 10, 'PENDING');
+    if (result.code === 200) {
+        const tbody = document.getElementById('communityApplicationsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (result.data.list && result.data.list.length > 0) {
+            result.data.list.forEach(app => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="font-medium">${app.username || 'Unknown'}</div>
+                    </td>
+                    <td>${app.message || '-'}</td>
+                    <td>${formatDate(app.applyTime)}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-success" onclick="approveMemberApplication(${app.applicationId})"><i class="fas fa-check"></i> Approve</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectMemberApplication(${app.applicationId})"><i class="fas fa-times"></i> Reject</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">No pending applications</td></tr>';
+        }
+
+        renderPagination(result.data, 'communityApplicationsPagination', loadCommunityApplicationsTab);
+    }
+}
+
+async function loadPendingApplicationsCount(communityId) {
+    const result = await CommunityApplicationsAPI.getCommunityApplications(communityId, 1, 1, 'PENDING');
+    if (result.code === 200 && result.data.total > 0) {
+        const badge = document.getElementById('pendingAppBadge');
+        if (badge) {
+            badge.textContent = result.data.total;
+            badge.style.display = '';
+        }
+    }
+}
+
+async function loadCommunityEventsPreview(communityId) {
+    const result = await CommunitiesAPI.getCommunityEvents(communityId, 1, 3);
+    if (result.code === 200) {
+        const container = document.getElementById('communityEventsPreview');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (result.data.list && result.data.list.length > 0) {
+            result.data.list.forEach(event => {
+                const div = document.createElement('div');
+                div.className = 'p-3 bg-gray-50 rounded-lg mb-2';
+                div.innerHTML = `<h5 class="font-medium">${event.name}</h5><p class="text-sm text-gray-500">${formatDate(event.date)}</p>`;
+                container.appendChild(div);
+            });
+        } else {
+            container.innerHTML = '<div class="text-center text-gray-500 py-4"><p>No events yet</p></div>';
+        }
+    }
+}
+
+function approveMemberApplication(applicationId) {
+    if (!currentCommunityId || !confirm('Approve this application?')) return;
+    CommunityApplicationsAPI.approveApplication(currentCommunityId, applicationId, { status: 'APPROVED' }).then(result => {
+        if (result.code === 200) {
+            loadCommunityApplicationsTab(1);
+            loadPendingApplicationsCount(currentCommunityId);
+        } else {
+            alert(result.message || 'Failed to approve');
+        }
+    });
+}
+
+function rejectMemberApplication(applicationId) {
+    if (!currentCommunityId) return;
+    const reason = prompt('Rejection reason (optional):');
+    CommunityApplicationsAPI.approveApplication(currentCommunityId, applicationId, { status: 'REJECTED', rejectReason: reason || '' }).then(result => {
+        if (result.code === 200) {
+            loadCommunityApplicationsTab(1);
+            loadPendingApplicationsCount(currentCommunityId);
+        } else {
+            alert(result.message || 'Failed to reject');
+        }
+    });
+}
+
+function promoteCommunityMember(memberId) {
+    if (!currentCommunityId || !confirm('Promote this member to admin?')) return;
+    CommunitiesAPI.updateMemberRole(currentCommunityId, memberId, 'ADMIN').then(result => {
+        if (result.code === 200) {
+            loadCommunityMembersTab(1);
+        } else {
+            alert(result.message || 'Failed to promote');
+        }
+    });
+}
+
+function removeCommunityMember(memberId) {
+    if (!currentCommunityId || !confirm('Remove this member from the community?')) return;
+    CommunitiesAPI.removeMember(currentCommunityId, memberId).then(result => {
+        if (result.code === 200) {
+            loadCommunityMembersTab(1);
+        } else {
+            alert(result.message || 'Failed to remove');
+        }
+    });
+}
+
+function editCommunityEvent(eventId) {
+    sessionStorage.setItem('editEventId', eventId);
+    showPage('create-event');
+}
+
+async function deleteCommunityEvent(eventId) {
+    if (!currentCommunityId || !confirm('Delete this event?')) return;
+    const result = await CommunitiesAPI.deleteCommunityEvent(currentCommunityId, eventId);
+    if (result.code === 200) {
+        loadCommunityEventsTab(1);
+    } else {
+        alert(result.message || 'Failed to delete');
     }
 }
 
@@ -1827,11 +2077,21 @@ async function viewCommunityDashboard() {
 }
 
 function showCommunityEvents() {
-    showPage('events');
+    if (document.getElementById('page-community-home').classList.contains('d-none')) {
+        if (currentCommunityId) {
+            viewCommunityHome(currentCommunityId);
+        }
+    }
+    switchCommunityTab('events');
 }
 
 function showCommunityMembers() {
-    showPage('community-members');
+    if (document.getElementById('page-community-home').classList.contains('d-none')) {
+        if (currentCommunityId) {
+            viewCommunityHome(currentCommunityId);
+        }
+    }
+    switchCommunityTab('members');
 }
 
 function viewCommunityRegistrations() {
@@ -1846,15 +2106,47 @@ function createCommunityEvent() {
 }
 
 function manageCommunityMembers() {
-    showPage('community-members');
+    if (document.getElementById('page-community-home').classList.contains('d-none')) {
+        if (currentCommunityId) {
+            viewCommunityHome(currentCommunityId);
+        }
+    }
+    switchCommunityTab('members');
 }
 
-async function loadCommunities(page, keyword = '') {
+async function loadCommunities(page, keyword = '', filter = 'all') {
+    currentCommunityFilter = filter;
+
+    var subtitle = document.querySelector('#page-communities .page-subtitle');
+    if (subtitle) {
+        if (filter === 'all') subtitle.textContent = 'Discover and join communities';
+        else if (filter === 'joined') subtitle.textContent = 'Communities you have joined';
+        else if (filter === 'created') subtitle.textContent = 'Communities you have created';
+    }
+
+    if (filter === 'all') {
+        await loadAllCommunities(page, keyword);
+    } else if (filter === 'joined' || filter === 'created') {
+        await loadUserCommunitiesFiltered(page, filter);
+    }
+}
+
+async function loadAllCommunities(page, keyword) {
     const result = await CommunitiesAPI.getCommunities(page, 10, keyword);
     if (result.code === 200) {
         const container = document.getElementById('communitiesList');
         container.innerHTML = '';
-        
+
+        let joinedCommunityIds = new Set();
+        if (currentUser) {
+            try {
+                const userComms = await CommunitiesAPI.getUserCommunities(currentUser.userId);
+                if (userComms.code === 200 && userComms.data) {
+                    (userComms.data || []).forEach(c => joinedCommunityIds.add(c.communityId));
+                }
+            } catch (e) {}
+        }
+
         const colors = [
             'linear-gradient(135deg, #673ab7, #9575cd)',
             'linear-gradient(135deg, #1e88e5, #42a5f5)',
@@ -1863,8 +2155,9 @@ async function loadCommunities(page, keyword = '') {
             'linear-gradient(135deg, #4caf50, #81c784)',
             'linear-gradient(135deg, #00bcd4, #4dd0e1)'
         ];
-        
+
         result.data.list.forEach((community, index) => {
+            const isMember = joinedCommunityIds.has(community.communityId);
             const card = document.createElement('div');
             card.className = 'community-card';
             card.innerHTML = `
@@ -1881,20 +2174,113 @@ async function loadCommunities(page, keyword = '') {
                     </div>
                 </div>
                 <div class="community-actions">
-                    <button class="community-action-btn view" onclick="viewCommunity(${community.communityId})"><i class="fas fa-eye"></i> View</button>
-                    <button class="community-action-btn join" onclick="applyToCommunityBtn(${community.communityId}, '${community.name}')"><i class="fas fa-paper-plane"></i> Apply</button>
+                    ${isMember
+                        ? `<button class="community-action-btn enter" onclick="viewCommunityHome(${community.communityId})"><i class="fas fa-sign-in-alt"></i> Enter</button>`
+                        : `<button class="community-action-btn view" onclick="viewCommunity(${community.communityId})"><i class="fas fa-eye"></i> View</button>
+                           <button class="community-action-btn join" onclick="applyToCommunityBtn(${community.communityId}, '${community.name}')"><i class="fas fa-paper-plane"></i> Apply</button>`
+                    }
                 </div>
             `;
             container.appendChild(card);
         });
-        
-        renderPagination(result.data, 'communitiesPagination', loadCommunities);
+
+        renderPagination(result.data, 'communitiesPagination', (p) => loadAllCommunities(p, keyword));
     }
+}
+
+async function loadUserCommunitiesFiltered(page, filter) {
+    if (!currentUser) return;
+
+    const container = document.getElementById('communitiesList');
+    container.innerHTML = '';
+
+    const result = await CommunitiesAPI.getUserCommunities(currentUser.userId);
+    if (result.code === 200 && result.data) {
+        let communities = result.data || [];
+
+        if (filter === 'created') {
+            communities = communities.filter(c => c.creatorId === currentUser.userId);
+        }
+
+        const colors = [
+            'linear-gradient(135deg, #673ab7, #9575cd)',
+            'linear-gradient(135deg, #1e88e5, #42a5f5)',
+            'linear-gradient(135deg, #ff9800, #ffb74d)',
+            'linear-gradient(135deg, #e91e63, #f48fb1)',
+            'linear-gradient(135deg, #4caf50, #81c784)',
+            'linear-gradient(135deg, #00bcd4, #4dd0e1)'
+        ];
+
+        if (communities.length === 0) {
+            const emptyMsg = filter === 'joined' ? 'You have not joined any communities yet' : 'You have not created any communities yet';
+            container.innerHTML = `<div class="text-center text-gray-500 py-8" style="grid-column: 1 / -1;"><div class="text-4xl mb-3">👥</div><p>${emptyMsg}</p></div>`;
+        } else {
+            communities.forEach((community, index) => {
+                const card = document.createElement('div');
+                card.className = 'community-card';
+                card.innerHTML = `
+                    <div class="community-banner" style="background: ${colors[index % colors.length]};"></div>
+                    <div class="community-logo">
+                        <span class="community-logo-text">${(community.name || 'C').charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div class="community-content">
+                        <h3 class="community-name">${community.name}</h3>
+                        <p class="community-desc">${community.description || ''}</p>
+                        <div class="community-stats">
+                            <span class="community-stat"><i class="fas fa-users"></i> ${community.memberCount || 0} members</span>
+                            <span class="community-stat"><i class="fas fa-calendar"></i> ${community.eventCount || 0} events</span>
+                        </div>
+                    </div>
+                    <div class="community-actions">
+                        <button class="community-action-btn enter" onclick="viewCommunityHome(${community.communityId})"><i class="fas fa-sign-in-alt"></i> Enter</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    }
+
+    // Clear pagination for filtered views (they're user-specific, non-paginated)
+    const paginationContainer = document.getElementById('communitiesPagination');
+    if (paginationContainer) paginationContainer.innerHTML = '';
+}
+
+function toggleCommunitiesSubnav(event) {
+    event.preventDefault();
+    const parent = event.currentTarget;
+    const subnav = document.getElementById('communitiesSubnav');
+    parent.classList.toggle('expanded');
+    subnav.classList.toggle('open');
+}
+
+function showCommunitiesFilter(filter) {
+    currentCommunityFilter = filter;
+
+    document.querySelectorAll('#communitiesSubnav .nav-link.sub').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#communitiesSubnav .nav-link.sub').forEach(function(el) {
+        var oc = el.getAttribute('onclick') || '';
+        if (oc.indexOf(filter) !== -1) {
+            el.classList.add('active');
+        }
+    });
+
+    document.querySelectorAll('.sidebar .nav-link').forEach(el => el.classList.remove('active'));
+    var parentNav = document.querySelector('.nav-parent[data-route="communities"]');
+    if (parentNav) parentNav.classList.add('active');
+
+    var subtitle = document.querySelector('#page-communities .page-subtitle');
+    if (subtitle) {
+        if (filter === 'all') subtitle.textContent = 'Discover and join communities';
+        else if (filter === 'joined') subtitle.textContent = 'Communities you have joined';
+        else if (filter === 'created') subtitle.textContent = 'Communities you have created';
+    }
+
+    showPage('communities');
 }
 
 function searchCommunities() {
     const keyword = document.getElementById('communitySearchInput').value;
-    loadCommunities(1, keyword);
+    loadCommunities(1, keyword, currentCommunityFilter);
 }
 
 async function viewCommunity(communityId) {
@@ -1911,6 +2297,20 @@ async function viewCommunity(communityId) {
             'linear-gradient(135deg, #e91e63, #f48fb1)'
         ];
         const colorIndex = communityId % colors.length;
+
+        let isMember = false;
+        if (currentUser) {
+            try {
+                const memberCheck = await CommunitiesAPI.checkMembership(communityId);
+                if (memberCheck.code === 200 && memberCheck.data) {
+                    isMember = memberCheck.data.isMember;
+                }
+            } catch (e) {}
+        }
+
+        const actionButtons = isMember
+            ? `<button class="btn btn-primary" onclick="viewCommunityHome(${community.communityId})"><i class="fas fa-sign-in-alt me-2"></i>Enter Community</button>`
+            : `<button class="btn btn-community ms-auto" onclick="applyToCommunityBtn(${community.communityId}, '${community.name.replace(/'/g, "\\'")}')"><i class="fas fa-paper-plane me-2"></i>Apply to Join</button>`;
 
         content.innerHTML = `
             <div class="community-banner p-6" style="background: ${colors[colorIndex]};">
@@ -1945,15 +2345,15 @@ async function viewCommunity(communityId) {
                     </div>
                 </div>
                 <div class="d-flex gap-3 mb-6">
-                    <button class="btn btn-primary" onclick="showPage('create-event')">Create Event</button>
-                    <button class="btn btn-warning" onclick="editCommunity(${community.communityId})">Edit Community</button>
-                    <button class="btn btn-danger" onclick="leaveCommunity(${community.communityId})">Leave Community</button>
-                    <button class="btn btn-community ms-auto" onclick="applyToCommunityBtn(${community.communityId}, '${community.name}')">Apply to Join</button>
+                    ${actionButtons}
                 </div>
             </div>
         `;
 
         loadCommunityMembersPreview(communityId);
+        if (isMember) {
+            loadCommunityEventsPreview(communityId);
+        }
         showPage('community-detail');
     }
 }

@@ -65,11 +65,11 @@ const CommunitiesAPI = {
     },
 
     async getUserCommunities(userId) {
-        return await fetchApi(`/users/${userId}/communities`);
+        return await fetchApi(`/communities/users/${userId}`);
     },
 
     async countUserCommunities(userId) {
-        return await fetchApi(`/users/${userId}/communities/count`);
+        return await fetchApi(`/communities/users/${userId}/count`);
     },
 
     async getCommunityHome(communityId) {

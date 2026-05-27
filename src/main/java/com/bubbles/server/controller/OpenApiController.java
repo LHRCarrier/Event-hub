@@ -34,10 +34,10 @@ public class OpenApiController {
                                         "schema": {
                                             "type": "object",
                                             "properties": {
-                                                "email": { "type": "string" },
+                                                "username": { "type": "string" },
                                                 "password": { "type": "string" }
                                             },
-                                            "required": ["email", "password"]
+                                            "required": ["username", "password"]
                                         }
                                     }
                                 }

@@ -32,6 +32,16 @@ public class AdminCommunityApplicationController {
         this.jwtUtil = jwtUtil;
     }
 
+    @PostMapping("/community-applications")
+    @Operation(summary = "提交社区创建申请", description = "提交新的社区创建申请，需要管理员审批")
+    public ResponseEntity<ApiResponse<CommunityCreateApplicationResponse>> submitApplication(
+            @Valid @RequestBody CommunityCreateApplicationRequest request,
+            HttpServletRequest httpRequest) {
+        Integer userId = getCurrentUserId(httpRequest);
+        CommunityCreateApplicationResponse response = applicationService.applyToCreate(request, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created("申请已提交，请等待审批", response));
+    }
+
     @GetMapping("/admin/community-applications")
     @Operation(summary = "获取所有申请", description = "获取所有社区创建申请，支持状态筛选（仅管理员）")
     public ResponseEntity<ApiResponse<PageResponse<CommunityCreateApplicationResponse>>> getAllApplications(

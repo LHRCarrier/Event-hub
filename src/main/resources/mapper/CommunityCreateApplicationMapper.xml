@@ -9,21 +9,14 @@
         SELECT <include refid="baseColumns"/> FROM community_create_applications WHERE status = #{status} ORDER BY apply_time DESC
     </select>
     <select id="countByName" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM community_create_applications WHERE name = #{name}
+        SELECT COUNT(*) FROM community_create_applications WHERE name = #{name} AND status IN ('PENDING', 'APPROVED')
     </select>
+    <delete id="deleteRejectedByName">
+        DELETE FROM community_create_applications WHERE name = #{name} AND status = 'REJECTED'
+    </delete>
     <select id="selectPage" resultType="com.bubbles.pojo.entity.CommunityCreateApplication">
         SELECT <include refid="baseColumns"/> FROM community_create_applications
         <where><if test="status != null and status != ''">status = #{status}</if></where>
         ORDER BY apply_time DESC
     </select>
-    <update id="updateById">
-        UPDATE community_create_applications
-        <set>
-            <if test="status != null">status = #{status},</if>
-            <if test="approveTime != null">approve_time = #{approveTime},</if>
-            <if test="approveBy != null">approve_by = #{approveBy},</if>
-            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
-        </set>
-        WHERE application_id = #{applicationId}
-    </update>
 </mapper>

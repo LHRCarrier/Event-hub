@@ -240,6 +240,19 @@
     background: rgba(37, 184, 166, 0.5);
 }
 
+#page-communities .communities-grid .community-action-btn.enter {
+    background: rgba(37, 184, 166, 0.4);
+    color: white;
+    border: 1px solid rgba(37, 184, 166, 0.5);
+    box-shadow: 0 2px 8px rgba(37, 184, 166, 0.35);
+    font-weight: 600;
+}
+
+#page-communities .communities-grid .community-action-btn.enter:hover {
+    background: rgba(37, 184, 166, 0.6);
+    box-shadow: 0 4px 12px rgba(37, 184, 166, 0.5);
+}
+
 #page-communities .pagination-container {
     display: flex;
     justify-content: center;

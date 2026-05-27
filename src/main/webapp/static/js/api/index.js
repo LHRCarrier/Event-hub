@@ -24,8 +24,8 @@ window.API = {
             method: 'PUT',
             body: JSON.stringify(data)
         }),
-        getUserCommunities: (userId) => fetchApi(`/users/${userId}/communities`),
-        countUserCommunities: (userId) => fetchApi(`/users/${userId}/communities/count`),
+        getUserCommunities: (userId) => fetchApi(`/communities/users/${userId}`),
+        countUserCommunities: (userId) => fetchApi(`/communities/users/${userId}/count`),
         uploadAvatar: (userId, file) => {
             const formData = new FormData();
             formData.append('file', file);
@@ -160,7 +160,8 @@ window.API = {
     
     admin: {
         dashboard: {
-            getStats: () => fetchApi('/admin/dashboard/stats')
+            getStats: () => fetchApi('/admin/dashboard/stats'),
+            getChartData: () => fetchApi('/admin/dashboard/chart-data')
         },
         users: {
             getAll: (page = 1, size = 10, keyword = '') => {

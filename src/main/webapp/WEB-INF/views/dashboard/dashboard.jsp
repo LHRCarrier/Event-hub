@@ -55,7 +55,7 @@
         </div>
         <div class="col-md-6">
             <div class="bg-white rounded-xl p-4 shadow-sm">
-                <h3 class="font-bold mb-4">Registration Status</h3>
+                <h3 class="font-bold mb-4">Community Application Status</h3>
                 <div id="statusChart" style="height: 300px;"></div>
             </div>
         </div>

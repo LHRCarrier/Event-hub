@@ -1,8 +1,6 @@
 package com.bubbles.server.controller.admin;
 
-import com.bubbles.pojo.dto.response.ApiResponse;
-import com.bubbles.pojo.dto.response.DashboardStatsResponse;
-import com.bubbles.pojo.dto.response.EventResponse;
+import com.bubbles.pojo.dto.response.*;
 import com.bubbles.server.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +31,18 @@ public class AdminDashboardController {
     @Operation(summary = "获取注册统计", description = "获取事件注册统计数据，用于仪表盘展示（仅管理员）")
     public ResponseEntity<ApiResponse<List<EventResponse>>> getRegistrationStats() {
         List<EventResponse> response = dashboardService.getRegistrationStats();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/chart-data")
+    @Operation(summary = "获取图表数据", description = "获取仪表盘所有图表数据，包括趋势、分类统计、社区活跃度、注册状态和最近活动")
+    public ResponseEntity<ApiResponse<DashboardChartDataResponse>> getChartData() {
+        DashboardChartDataResponse response = new DashboardChartDataResponse();
+        response.setTrendData(dashboardService.getTrendData());
+        response.setCategoryStats(dashboardService.getCategoryStats());
+        response.setCommunityStats(dashboardService.getCommunityStats());
+        response.setStatusStats(dashboardService.getRegistrationStatusStats());
+        response.setRecentActivities(dashboardService.getRecentActivities());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

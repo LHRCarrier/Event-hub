@@ -147,6 +147,49 @@
             text-align: center;
             margin-right: 0;
         }
+        .nav-parent {
+            cursor: pointer;
+        }
+        .subnav-arrow {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+        .nav-parent.expanded .subnav-arrow {
+            transform: rotate(180deg);
+        }
+        .subnav {
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            padding-left: 28px;
+            margin-bottom: 4px;
+        }
+        .subnav.open {
+            display: flex;
+        }
+        .sidebar .nav-link.sub {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--white-75);
+            border-radius: 6px;
+        }
+        .sidebar .nav-link.sub:hover,
+        .sidebar .nav-link.sub.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+        .sidebar .nav-link.sub i {
+            font-size: 12px;
+            width: 18px;
+        }
+        .sidebar .nav-link.sub.create-community {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        .sidebar .nav-link.sub.create-community:hover {
+            background: rgba(37, 184, 166, 0.15);
+            color: var(--primary-color);
+        }
         .main-content {
             flex: 1;
             display: flex;
@@ -589,12 +632,24 @@
                     </a>
                 </div>
                 <div class="nav-group">
-                    <a class="nav-link" href="#communities" onclick="showPage('communities')" data-route="communities">
+                    <a class="nav-link nav-parent" href="#" onclick="toggleCommunitiesSubnav(event)" data-route="communities">
                         <i class="fas fa-users"></i> Communities
+                        <i class="fas fa-chevron-down subnav-arrow ms-auto"></i>
                     </a>
-                    <a class="nav-link" href="#events" onclick="showPage('events')" data-route="events">
-                        <i class="fas fa-calendar"></i> Events
-                    </a>
+                    <div class="subnav" id="communitiesSubnav">
+                        <a class="nav-link sub" href="#communities" onclick="showCommunitiesFilter('all')" data-route="communities">
+                            <i class="fas fa-globe"></i> All Communities
+                        </a>
+                        <a class="nav-link sub" href="#communities" onclick="showCommunitiesFilter('joined')" data-route="communities">
+                            <i class="fas fa-user-check"></i> My Joined
+                        </a>
+                        <a class="nav-link sub" href="#communities" onclick="showCommunitiesFilter('created')" data-route="communities">
+                            <i class="fas fa-user-edit"></i> My Created
+                        </a>
+                        <a class="nav-link sub create-community" href="#create-community" onclick="showPage('create-community')" data-route="create-community">
+                            <i class="fas fa-plus-circle"></i> Create Community
+                        </a>
+                    </div>
                     <a class="nav-link" href="#registrations" onclick="showPage('registrations')" data-route="registrations">
                         <i class="fas fa-file-alt"></i> Registrations
                     </a>
@@ -632,41 +687,39 @@
                 <div class="user-area">
                     <div id="userMenuContainer" class="relative" style="z-index: 99999;">
                         <div id="avatarWrapper" class="cursor-pointer relative" style="width: 48px; height: 48px; z-index: 99999;">
-                            <div class="absolute inset-0 rounded-full overflow-hidden" style="transition: all 0.3s ease;">
+                            <div id="avatarInner" class="absolute inset-0 rounded-full overflow-hidden transition-all duration-300 ease-out" style="border: 2px solid transparent;">
                                 <img id="headerAvatar" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none;">
                                 <span id="headerAvatarInitial" class="w-full h-full flex items-center justify-center text-white font-semibold text-lg" style="background: var(--primary-color);">U</span>
                             </div>
                         </div>
-                        <div id="userMenu" class="absolute top-0 left-0 overflow-hidden opacity-0 invisible transition-all duration-300 ease-out pointer-events-none" style="z-index: 99999; background-color: rgba(30, 30, 30, 0.98); border-radius: 20px; border: 1px solid rgba(80, 80, 80, 0.6); transform: translate(-24px, -64px) scale(0.4); transform-origin: 24px 64px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 320px;">
-                            <div class="relative">
-                                <div class="h-40 bg-gradient-to-r from-gray-700 to-gray-800" style="border-radius: 19px 19px 0 0;"></div>
-                                <div class="absolute left-1/2 -translate-x-1/2" style="bottom: -52px; width: 100px; height: 100px;">
-                                    <div class="relative w-full h-full rounded-full overflow-hidden border-4 border-gray-600 bg-gray-800" style="box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);">
-                                        <img id="menuAvatar" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none; object-position: center;">
-                                        <span id="menuAvatarInitial" class="w-full h-full flex items-center justify-center text-white font-bold text-3xl" style="background: var(--primary-color);">U</span>
-                                    </div>
+                        <div id="userMenu" class="opacity-0 invisible pointer-events-none" style="position: fixed; z-index: 99999; width: 300px; background-color: rgba(36, 36, 36, 0.98); border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); transform: scale(0.6); transform-origin: 50% 0; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s ease;">
+                            <div style="position: absolute; top: -42px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; z-index: 10;">
+                                <div style="width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid rgba(36, 36, 36, 0.98); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4); background: #2a2a2a;">
+                                    <img id="menuAvatar" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none; object-position: center;">
+                                    <span id="menuAvatarInitial" class="w-full h-full flex items-center justify-center text-white font-bold text-3xl" style="background: var(--primary-color);">U</span>
                                 </div>
                             </div>
-                            <div class="pt-28 pb-5 px-6 text-center">
-                                <span id="menuUsername" class="font-bold text-white text-2xl block mb-2" style="word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">Admin</span>
-                                <span class="text-gray-400 text-base">EventHub Member</span>
+                            <div style="height: 48px; background: linear-gradient(135deg, #25B8A6 0%, #1A8E83 100%); border-radius: 13px 13px 0 0;"></div>
+                            <div style="padding: 52px 20px 8px 20px; text-align: center;">
+                                <span id="menuUsername" class="font-bold text-white text-lg block mb-1" style="word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">Admin</span>
+                                <span class="text-gray-400 text-sm">EventHub Member</span>
                             </div>
-                            <div class="px-3 pb-3">
-                                <div class="bg-gray-800/50 rounded-2xl p-2 space-y-1">
-                                    <a href="#profile" onclick="showPage('profile'); closeUserMenu();" class="flex items-center px-4 py-3 rounded-xl hover:bg-gray-700/80 text-white transition-all duration-200">
-                                        <i class="fas fa-user-circle mr-4 text-gray-400 text-xl w-6 text-center"></i>
-                                        <span class="text-lg">Profile</span>
-                                        <i class="fas fa-chevron-right ml-auto text-gray-500"></i>
+                            <div style="padding: 0 12px 12px 12px;">
+                                <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px;">
+                                    <a href="#profile" onclick="showPage('profile'); closeUserMenu();" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-white/10 text-white no-underline transition-colors duration-150">
+                                        <i class="fas fa-user-circle mr-3 text-gray-400 text-lg w-5 text-center"></i>
+                                        <span class="text-sm">Personal Center</span>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-500 text-xs"></i>
                                     </a>
-                                    <a href="#settings" onclick="showPage('settings'); closeUserMenu();" class="flex items-center px-4 py-3 rounded-xl hover:bg-gray-700/80 text-white transition-all duration-200">
-                                        <i class="fas fa-cog mr-4 text-gray-400 text-xl w-6 text-center"></i>
-                                        <span class="text-lg">Settings</span>
-                                        <i class="fas fa-chevron-right ml-auto text-gray-500"></i>
+                                    <a href="#settings" onclick="showPage('settings'); closeUserMenu();" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-white/10 text-white no-underline transition-colors duration-150">
+                                        <i class="fas fa-cog mr-3 text-gray-400 text-lg w-5 text-center"></i>
+                                        <span class="text-sm">Settings</span>
+                                        <i class="fas fa-chevron-right ml-auto text-gray-500 text-xs"></i>
                                     </a>
-                                    <div class="border-t border-gray-700 my-2"></div>
-                                    <a href="#" onclick="handleLogout();" class="flex items-center px-4 py-3 rounded-xl hover:bg-red-600/30 text-red-300 transition-all duration-200">
-                                        <i class="fas fa-sign-out-alt mr-4 text-red-400 text-xl w-6 text-center"></i>
-                                        <span class="text-lg">Logout</span>
+                                    <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 4px 0;"></div>
+                                    <a href="#" onclick="handleLogout();" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-red-500/20 text-red-300 no-underline transition-colors duration-150">
+                                        <i class="fas fa-sign-out-alt mr-3 text-red-400 text-lg w-5 text-center"></i>
+                                        <span class="text-sm">Logout</span>
                                     </a>
                                 </div>
                             </div>

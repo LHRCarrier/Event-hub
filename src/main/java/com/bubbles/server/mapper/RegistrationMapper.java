@@ -48,4 +48,13 @@ public interface RegistrationMapper extends BaseMapper<Registration> {
      */
     @Select("SELECT COUNT(*) FROM registrations WHERE event_id = #{eventId}")
     int countByEventId(@Param("eventId") Integer eventId);
+
+    @Select("SELECT DATE_FORMAT(register_time, '%Y-%m') as month, COUNT(*) as count FROM registrations WHERE register_time >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY DATE_FORMAT(register_time, '%Y-%m') ORDER BY month")
+    List<java.util.Map<String, Object>> countMonthlyRegistrations();
+
+    @Select("SELECT status, COUNT(*) as count FROM registrations GROUP BY status")
+    List<java.util.Map<String, Object>> countByStatus();
+
+    @Select("SELECT r.register_time as time, u.username, e.name as eventName FROM registrations r JOIN users u ON r.user_id = u.user_id JOIN events e ON r.event_id = e.event_id ORDER BY r.register_time DESC LIMIT #{limit}")
+    List<java.util.Map<String, Object>> findRecentRegistrations(@Param("limit") int limit);
 }

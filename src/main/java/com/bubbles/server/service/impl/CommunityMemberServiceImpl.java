@@ -189,6 +189,7 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
                 response.setDescription(community.getDescription());
                 response.setLogoUrl(community.getLogoUrl());
                 response.setRole(member.getRole());
+                response.setCreatorId(community.getCreatorId());
                 response.setJoinTime(member.getJoinTime());
                 return response;
             })

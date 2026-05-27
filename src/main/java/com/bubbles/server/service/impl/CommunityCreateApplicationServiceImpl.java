@@ -51,8 +51,10 @@ public class CommunityCreateApplicationServiceImpl implements CommunityCreateApp
     @Transactional
     public CommunityCreateApplicationResponse applyToCreate(CommunityCreateApplicationRequest request, Integer applicantId) {
         if (applicationMapper.countByName(request.getName()) > 0) {
-            throw new BusinessException(400, "社区名称已存在");
+            throw new BusinessException(400, "该社区名称已有进行中或已通过的申请");
         }
+
+        applicationMapper.deleteRejectedByName(request.getName());
 
         CommunityCreateApplication application = new CommunityCreateApplication();
         application.setName(request.getName());
@@ -106,12 +108,19 @@ public class CommunityCreateApplicationServiceImpl implements CommunityCreateApp
             throw new BusinessException(400, "申请状态不允许操作");
         }
 
+        if (communityMapper.selectCount(
+                new LambdaQueryWrapper<Community>().eq(Community::getName, application.getName())) > 0) {
+            throw new BusinessException(400, "社区名称已存在");
+        }
+
         Community community = new Community();
         community.setName(application.getName());
         community.setDescription(application.getDescription());
         community.setLogoUrl(application.getLogoUrl());
         community.setRequireApproval(true);
         community.setCreatorId(application.getApplicantId());
+        community.setMemberCount(0);
+        community.setEventCount(0);
         community.setStatus("ACTIVE");
         community.setCreateTime(new Date());
         community.setUpdateTime(new Date());
