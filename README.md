@@ -31,7 +31,7 @@
 ### 1. 克隆项目
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/LHRCarrier/Event-hub
 cd Event-hub
 ```
 
