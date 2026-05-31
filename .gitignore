@@ -50,3 +50,14 @@ test_deployment.ps1
 test_register.ps1
 ### 文档
 评审v1.md
+
+# 文档类文件（README.md 除外）
+*.md
+!README.md
+*.txt
+*.pptx
+
+# 视觉设计稿和原型
+Mock-background/
+原型/
+新设计布局/

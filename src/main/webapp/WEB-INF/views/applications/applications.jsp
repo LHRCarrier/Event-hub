@@ -14,7 +14,7 @@
     <div id="tab-applications-join" class="tab-panel">
         <div class="applications-grid" id="joinApplicationsList">
             <div class="text-center text-gray-500 py-8 empty-state">
-                <div class="text-4xl mb-3">📋</div>
+                <div class="text-4xl mb-3"><i class="fas fa-clipboard-list"></i></div>
                 <p>No join applications</p>
             </div>
         </div>
@@ -26,7 +26,7 @@
     <div id="tab-applications-create" class="tab-panel d-none">
         <div class="applications-grid" id="createApplicationsList">
             <div class="text-center text-gray-500 py-8 empty-state">
-                <div class="text-4xl mb-3">📝</div>
+                <div class="text-4xl mb-3"><i class="fas fa-file-alt"></i></div>
                 <p>No creation applications</p>
             </div>
         </div>
@@ -247,6 +247,12 @@
     font-size: 14px;
 }
 
+#page-applications nav[aria-label] {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+}
+
 #page-applications .pagination {
     display: flex;
     gap: 8px;
@@ -254,6 +260,7 @@
     padding: 0;
     margin: 0;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 #page-applications .pagination li {
@@ -262,7 +269,7 @@
 
 #page-applications .pagination li a,
 #page-applications .pagination li span {
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 8px;
     background: var(--white-08);
     border: 1px solid var(--white-12);
@@ -271,10 +278,13 @@
     font-size: 13px;
     transition: all 0.2s;
     cursor: pointer;
+    min-width: 40px;
+    text-align: center;
 }
 
 #page-applications .pagination li a:hover,
-#page-applications .pagination li.active span {
+#page-applications .pagination li.active span,
+#page-applications .pagination li.active a {
     background: var(--primary-color);
     border-color: var(--primary-color);
     color: white;

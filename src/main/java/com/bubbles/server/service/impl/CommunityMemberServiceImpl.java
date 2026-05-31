@@ -106,6 +106,17 @@ public class CommunityMemberServiceImpl implements CommunityMemberService {
             throw new BusinessException(403, "无权限修改成员角色");
         }
 
+        if ("ADMIN".equals(member.getRole()) && !"ADMIN".equals(role)) {
+            LambdaQueryWrapper<CommunityMember> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(CommunityMember::getCommunityId, member.getCommunityId());
+            queryWrapper.eq(CommunityMember::getRole, "ADMIN");
+            queryWrapper.eq(CommunityMember::getStatus, "ACTIVE");
+            long adminCount = communityMemberMapper.selectCount(queryWrapper);
+            if (adminCount <= 1) {
+                throw new BusinessException(400, "无法降级唯一的管理员，社区至少需要一个管理员");
+            }
+        }
+
         member.setRole(role);
         communityMemberMapper.updateById(member);
     }

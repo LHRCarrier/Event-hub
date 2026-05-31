@@ -27,6 +27,14 @@
         ORDER BY create_time DESC
     </select>
 
-    
+    <select id="findTopByMemberCount" resultType="java.util.HashMap">
+        SELECT c.name, COUNT(cm.member_id) AS member_count
+        FROM communities c
+        LEFT JOIN community_members cm ON c.community_id = cm.community_id AND cm.status = 'ACTIVE'
+        WHERE c.status = 'ACTIVE'
+        GROUP BY c.community_id, c.name
+        ORDER BY member_count DESC
+        LIMIT #{limit}
+    </select>
 
 </mapper>

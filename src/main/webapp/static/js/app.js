@@ -77,30 +77,31 @@ function showPage(pageName) {
             modal.hide();
         }
     });
-    
+
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
         backdrop.remove();
     });
-    
+
     document.body.classList.remove('modal-open');
 
     document.querySelectorAll('.page-content').forEach(el => el.classList.add('d-none'));
     document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-    
+
     const page = document.getElementById('page-' + pageName);
     if (page) {
         page.classList.remove('d-none');
     }
-    
-    const navLink = document.querySelector(`[href="#${pageName}"]`);
+
+    var navLink = document.querySelector(`[href="#${pageName}"], [data-route="${pageName}"]`);
     if (navLink) {
         navLink.classList.add('active');
     }
-    
+
     if (window.location.hash !== '#' + pageName) {
         window.location.hash = pageName;
+        return;
     }
-    
+
     if (pageName === 'home') {
         loadHomePage();
     } else if (pageName === 'home-new') {
@@ -221,7 +222,7 @@ function loadHomeUpcomingEvents(events) {
     container.innerHTML = '';
     
     if (!events || events.length === 0) {
-        container.innerHTML = '<div class="col-md-12 text-center text-gray-500 py-8"><div class="text-4xl mb-3">📅</div><p>No upcoming events</p></div>';
+        container.innerHTML = '<div class="col-md-12 text-center text-gray-500 py-8"><div class="text-4xl mb-3"><i class="fas fa-calendar"></i></div><p>No upcoming events</p></div>';
         return;
     }
     
@@ -372,25 +373,25 @@ async function viewEvent(eventId) {
                 <div class="row mb-6">
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">📅</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-calendar"></i></div>
                             <div class="font-medium">${formatDate(event.date)}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">📍</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-map-marker-alt"></i></div>
                             <div class="font-medium">${event.location}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">🏷️</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-tag"></i></div>
                             <div class="font-medium">${event.categoryName || '-'}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">👥</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-users"></i></div>
                             <div class="font-medium">${event.participantCount} Participants</div>
                         </div>
                     </div>
@@ -586,7 +587,7 @@ async function loadCategories() {
                     </div>
                 </div>
                 <div class="category-actions">
-                    <button class="action-btn secondary"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn secondary" onclick="openEditCategoryModal(${cat.categoryId}, '${cat.name.replace(/'/g, "\\'")}', '${(cat.description || '').replace(/'/g, "\\'")}')"><i class="fas fa-edit"></i></button>
                     <button class="action-btn danger" onclick="deleteCategory(${cat.categoryId})"><i class="fas fa-trash"></i></button>
                 </div>
             `;
@@ -597,13 +598,41 @@ async function loadCategories() {
 
 async function deleteCategory(categoryId) {
     if (!confirm('Are you sure you want to delete this category?')) return;
-    
+
     const result = await CategoriesAPI.deleteCategory(categoryId);
     if (result.code === 200) {
         alert('Category deleted successfully');
         loadCategories();
     } else {
         alert(result.message);
+    }
+}
+
+function openEditCategoryModal(categoryId, name, description) {
+    document.getElementById('editCategoryId').value = categoryId;
+    document.getElementById('editCategoryName').value = name;
+    document.getElementById('editCategoryDescription').value = description || '';
+    document.getElementById('editCategoryModal').classList.add('active');
+}
+
+function closeEditCategoryModal() {
+    document.getElementById('editCategoryModal').classList.remove('active');
+}
+
+async function handleUpdateCategory(e) {
+    e.preventDefault();
+    var categoryId = document.getElementById('editCategoryId').value;
+    var name = document.getElementById('editCategoryName').value.trim();
+    var description = document.getElementById('editCategoryDescription').value.trim();
+
+    if (!name) return;
+
+    var result = await CategoriesAPI.updateCategory(categoryId, { name: name, description: description });
+    if (result.code === 200) {
+        closeEditCategoryModal();
+        loadCategories();
+    } else {
+        alert(result.message || 'Update failed');
     }
 }
 
@@ -751,9 +780,23 @@ function initCategoryChart(data) {
 
     charts['categoryChart'] = echarts.init(chartDom);
 
+    function abbreviate(name) {
+        if (!name) return '';
+        if (name.length <= 12) return name;
+        var words = name.split(/[\s\-]+/);
+        if (words.length <= 1) return name.substring(0, 10) + '...';
+        return words[0] + ' ' + words.slice(1).map(function(w) { return w.charAt(0) + '.'; }).join('');
+    }
+
     var pieData = data.map(function(d, i) {
         var hue = (i * 360 / data.length) % 360;
-        return { value: d.count, name: d.name, itemStyle: { color: 'hsl(' + hue + ', 70%, 50%)' } };
+        var shortName = abbreviate(d.name);
+        return {
+            value: d.count,
+            name: shortName,
+            fullName: d.name,
+            itemStyle: { color: 'hsl(' + hue + ', 70%, 50%)' }
+        };
     });
 
     var option = {
@@ -762,43 +805,68 @@ function initCategoryChart(data) {
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             borderColor: '#e0e0e0',
             textStyle: { color: '#333' },
-            formatter: '{b}: {c} ({d}%)'
+            formatter: function(params) {
+                return params.data.fullName + ': ' + params.value + ' (' + params.percent + '%)';
+            }
         },
         legend: {
-            orient: 'horizontal',
-            bottom: '5%',
-            textStyle: { color: '#666' }
+            type: 'scroll',
+            orient: 'vertical',
+            right: 5,
+            top: 'middle',
+            textStyle: { color: '#666', fontSize: 11 },
+            pageIconSize: 10,
+            itemWidth: 12,
+            itemHeight: 12,
+            itemGap: 6
         },
         series: [
             {
                 name: 'Events',
                 type: 'pie',
-                radius: ['45%', '70%'],
-                center: ['50%', '45%'],
-                avoidLabelOverlap: false,
+                radius: ['40%', '65%'],
+                center: ['35%', '50%'],
+                avoidLabelOverlap: true,
                 itemStyle: {
-                    borderRadius: 8,
+                    borderRadius: 6,
                     borderColor: '#fff',
                     borderWidth: 2
                 },
                 label: {
-                    show: false,
-                    position: 'center'
+                    show: true,
+                    position: 'outside',
+                    formatter: function(params) {
+                        return params.percent >= 3 ? params.name : '';
+                    },
+                    fontSize: 10,
+                    color: '#555',
+                    distanceToLabelLine: 4
                 },
                 emphasis: {
                     label: {
                         show: true,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: 'bold'
                     }
                 },
-                labelLine: { show: false },
+                labelLine: {
+                    show: true,
+                    length: 16,
+                    length2: 12,
+                    lineStyle: { color: '#bbb' }
+                },
                 data: pieData
             }
         ]
     };
 
     charts['categoryChart'].setOption(option);
+
+    charts['categoryChart'].on('click', function(params) {
+        if (params.componentType === 'legend') {
+            // allow toggling legend; do nothing extra
+        }
+    });
 }
 
 function initCommunityChart(data) {
@@ -814,51 +882,69 @@ function initCommunityChart(data) {
     var names = data.map(function(d) { return d.name; });
     var values = data.map(function(d) { return d.memberCount; });
 
+    var showDataZoom = names.length > 8;
+
     var option = {
         tooltip: {
             trigger: 'axis',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             borderColor: '#e0e0e0',
             textStyle: { color: '#333' },
-            axisPointer: { type: 'shadow' }
+            axisPointer: { type: 'shadow' },
+            formatter: function(params) {
+                return params[0].name + '<br/>Members: ' + params[0].value;
+            }
         },
         grid: {
             left: '3%',
-            right: '4%',
+            right: showDataZoom ? '14%' : '8%',
             bottom: '3%',
-            top: '10%',
             containLabel: true
         },
+        dataZoom: showDataZoom ? [{
+            type: 'slider',
+            yAxisIndex: 0,
+            start: 0,
+            end: names.length > 15 ? 45 : 100,
+            width: 16,
+            right: 10,
+            handleSize: 0,
+            borderColor: 'transparent',
+            backgroundColor: '#f0f0f0',
+            fillerColor: 'rgba(59, 130, 246, 0.2)'
+        }] : [],
         xAxis: {
-            type: 'category',
-            data: names,
-            axisLine: { lineStyle: { color: '#e0e0e0' } },
-            axisLabel: {
-                color: '#666',
-                interval: 0,
-                rotate: names.length > 6 ? 15 : 0,
-                formatter: function(val) {
-                    return val.length > 12 ? val.substring(0, 12) + '...' : val;
-                }
-            }
-        },
-        yAxis: {
             type: 'value',
+            minInterval: 1,
             axisLine: { lineStyle: { color: '#e0e0e0' } },
             axisLabel: { color: '#666' },
             splitLine: { lineStyle: { color: '#f0f0f0' } }
+        },
+        yAxis: {
+            type: 'category',
+            data: names,
+            inverse: true,
+            axisLine: { lineStyle: { color: '#e0e0e0' } },
+            axisLabel: {
+                color: '#666',
+                width: 120,
+                overflow: 'truncate',
+                formatter: function(val) {
+                    return val.length > 15 ? val.substring(0, 14) + '...' : val;
+                }
+            }
         },
         series: [
             {
                 name: 'Members',
                 type: 'bar',
-                barWidth: '50%',
+                barWidth: '60%',
                 data: values,
                 itemStyle: {
-                    borderRadius: [6, 6, 0, 0],
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: '#3b82f6' },
-                        { offset: 1, color: '#1d4ed8' }
+                    borderRadius: [0, 6, 6, 0],
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#1d4ed8' },
+                        { offset: 1, color: '#3b82f6' }
                     ])
                 }
             }
@@ -974,7 +1060,7 @@ async function loadRegistrations() {
         if (!result.data || result.data.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-icon"><i class="fas fa-clipboard-list"></i></div>
                     <p class="empty-state-text">No registrations yet</p>
                 </div>
             `;
@@ -1503,7 +1589,7 @@ async function loadJoinApplications(page = 1) {
         if (!result.data.list || result.data.list.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="text-4xl mb-3">📋</div>
+                    <div class="text-4xl mb-3"><i class="fas fa-clipboard-list"></i></div>
                     <p>No join applications</p>
                 </div>`;
             return;
@@ -1553,11 +1639,17 @@ async function loadCreateApplicationsPage(page = 1) {
         if (list.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="text-4xl mb-3">📝</div>
+                    <div class="text-4xl mb-3"><i class="fas fa-file-alt"></i></div>
                     <p>No creation applications</p>
                 </div>`;
+            document.getElementById('createApplicationsPagination').innerHTML = '';
             return;
         }
+
+        var pageSize = 10;
+        var totalPages = Math.ceil(list.length / pageSize);
+        var start = (page - 1) * pageSize;
+        var pageList = list.slice(start, start + pageSize);
 
         const colors = [
             'rgba(139, 92, 246, 0.3)',
@@ -1566,7 +1658,7 @@ async function loadCreateApplicationsPage(page = 1) {
             'rgba(59, 130, 246, 0.3)'
         ];
 
-        list.forEach((app, index) => {
+        pageList.forEach((app, index) => {
             const card = document.createElement('div');
             card.className = 'application-card';
             card.innerHTML = `
@@ -1586,6 +1678,8 @@ async function loadCreateApplicationsPage(page = 1) {
             `;
             container.appendChild(card);
         });
+
+        renderPagination({ total: list.length, size: pageSize, page: page }, 'createApplicationsPagination', loadCreateApplicationsPage);
     }
 }
 
@@ -1598,7 +1692,7 @@ async function loadCommunityCreationApplications(status = 'PENDING', page = 1) {
         if (!result.data.list || result.data.list.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1 / -1;">
-                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-icon"><i class="fas fa-clipboard-list"></i></div>
                     <p class="empty-state-text">No applications</p>
                 </div>
             `;
@@ -1852,7 +1946,7 @@ async function loadCommunityEventsTab(page) {
                 container.appendChild(card);
             });
         } else {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8"><div class="text-3xl mb-2">📅</div><p>No events in this community yet</p></div>';
+            container.innerHTML = '<div class="text-center text-gray-500 py-8"><div class="text-3xl mb-2"><i class="fas fa-calendar"></i></div><p>No events in this community yet</p></div>';
         }
 
         renderPagination(result.data, 'communityEventsPagination', loadCommunityEventsTab);
@@ -1863,7 +1957,7 @@ async function loadCommunityMembersTab(page) {
     if (!currentCommunityId) return;
     const result = await CommunitiesAPI.getCommunityMembers(currentCommunityId, page, 10);
     if (result.code === 200) {
-        const tbody = document.getElementById('communityMembersTableBody');
+        const tbody = document.getElementById('communityMembersTabTableBody');
         if (!tbody) return;
         tbody.innerHTML = '';
 
@@ -1887,7 +1981,7 @@ async function loadCommunityMembersTab(page) {
                     <td>${formatDate(member.joinTime)}</td>
                     ${isAdmin ? `<td>
                         <div class="d-flex gap-2">
-                            ${member.role !== 'ADMIN' ? `<button class="btn btn-sm btn-outline-primary" onclick="promoteCommunityMember(${member.memberId})"><i class="fas fa-arrow-up"></i></button>` : ''}
+                            ${member.role !== 'ADMIN' ? `<button class="btn btn-sm btn-outline-primary" onclick="promoteCommunityMember(${member.memberId})" title="Promote to Admin"><i class="fas fa-arrow-up"></i></button>` : `<button class="btn btn-sm btn-outline-warning" onclick="demoteCommunityMember(${member.memberId})" title="Demote to Member"><i class="fas fa-arrow-down"></i></button>`}
                             <button class="btn btn-sm btn-outline-danger" onclick="removeCommunityMember(${member.memberId})"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>` : ''}
@@ -1898,7 +1992,7 @@ async function loadCommunityMembersTab(page) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">No members found</td></tr>';
         }
 
-        renderPagination(result.data, 'communityMembersPagination', loadCommunityMembersTab);
+        renderPagination(result.data, 'communityMembersTabPagination', loadCommunityMembersTab);
     }
 }
 
@@ -1999,6 +2093,31 @@ function promoteCommunityMember(memberId) {
             loadCommunityMembersTab(1);
         } else {
             alert(result.message || 'Failed to promote');
+        }
+    });
+}
+
+function demoteCommunityMember(memberId) {
+    if (!currentCommunityId) return;
+
+    var rows = document.querySelectorAll('#communityMembersTabTableBody tr');
+    var adminCount = 0;
+    rows.forEach(function(row) {
+        var badge = row.querySelector('.badge');
+        if (badge && badge.textContent.trim() === 'ADMIN') adminCount++;
+    });
+
+    if (adminCount <= 1) {
+        alert('Cannot demote the last admin. The community must have at least one admin.');
+        return;
+    }
+
+    if (!confirm('Demote this admin to member?')) return;
+    CommunitiesAPI.updateMemberRole(currentCommunityId, memberId, 'MEMBER').then(result => {
+        if (result.code === 200) {
+            loadCommunityMembersTab(1);
+        } else {
+            alert(result.message || 'Failed to demote');
         }
     });
 }
@@ -2213,7 +2332,7 @@ async function loadUserCommunitiesFiltered(page, filter) {
 
         if (communities.length === 0) {
             const emptyMsg = filter === 'joined' ? 'You have not joined any communities yet' : 'You have not created any communities yet';
-            container.innerHTML = `<div class="text-center text-gray-500 py-8" style="grid-column: 1 / -1;"><div class="text-4xl mb-3">👥</div><p>${emptyMsg}</p></div>`;
+            container.innerHTML = `<div class="text-center text-gray-500 py-8" style="grid-column: 1 / -1;"><div class="text-4xl mb-3"><i class="fas fa-users"></i></div><p>${emptyMsg}</p></div>`;
         } else {
             communities.forEach((community, index) => {
                 const card = document.createElement('div');
@@ -2321,25 +2440,25 @@ async function viewCommunity(communityId) {
                 <div class="row mb-6">
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">👥</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-users"></i></div>
                             <div class="font-medium">${community.memberCount || 0} Members</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">📅</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-calendar"></i></div>
                             <div class="font-medium">${community.eventCount || 0} Events</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">📊</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-chart-bar"></i></div>
                             <div class="font-medium">${community.status || 'ACTIVE'}</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="text-center p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl mb-2">📅</div>
+                            <div class="text-2xl mb-2"><i class="fas fa-calendar"></i></div>
                             <div class="font-medium">${formatDate(community.createTime)}</div>
                         </div>
                     </div>
@@ -2425,7 +2544,9 @@ async function loadCommunityMembers(page) {
                     ${member.role !== 'ADMIN' ? `
                     <button class="btn btn-sm btn-warning" onclick="promoteMember(${member.memberId})">Promote</button>
                     <button class="btn btn-sm btn-danger ms-2" onclick="removeMember(${member.memberId})">Remove</button>
-                    ` : ''}
+                    ` : `
+                    <button class="btn btn-sm btn-outline-warning" onclick="demoteMember(${member.memberId})">Demote</button>
+                    `}
                 </td>
             `;
             tbody.appendChild(row);
@@ -2502,6 +2623,30 @@ async function promoteMember(memberId) {
     const result = await CommunitiesAPI.updateMemberRole(currentCommunityId, memberId, 'ADMIN');
     if (result.code === 200) {
         alert('Member promoted successfully');
+        loadCommunityMembers(1);
+    } else {
+        alert(result.message);
+    }
+}
+
+async function demoteMember(memberId) {
+    var rows = document.querySelectorAll('#communityMembersTableBody tr');
+    var adminCount = 0;
+    rows.forEach(function(row) {
+        var badge = row.querySelector('.badge-admin');
+        if (badge) adminCount++;
+    });
+
+    if (adminCount <= 1) {
+        alert('Cannot demote the last admin. The community must have at least one admin.');
+        return;
+    }
+
+    if (!confirm('Demote this admin to member?')) return;
+
+    const result = await CommunitiesAPI.updateMemberRole(currentCommunityId, memberId, 'MEMBER');
+    if (result.code === 200) {
+        alert('Admin demoted successfully');
         loadCommunityMembers(1);
     } else {
         alert(result.message);

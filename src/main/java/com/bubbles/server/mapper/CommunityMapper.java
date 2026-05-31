@@ -18,9 +18,8 @@ public interface CommunityMapper extends BaseMapper<Community> {
 
     List<Community> searchCommunities(@Param("keyword") String keyword);
 
-    @Select("SELECT name, member_count FROM communities WHERE status = 'ACTIVE' ORDER BY member_count DESC LIMIT #{limit}")
     List<java.util.Map<String, Object>> findTopByMemberCount(@Param("limit") int limit);
 
-    @Select("SELECT name, create_time as time FROM ities ORDER BY create_time DESC LIMIT #{limit}")
+    @Select("SELECT name, create_time as time FROM communities ORDER BY create_time DESC LIMIT #{limit}")
     List<java.util.Map<String, Object>> findRecentCommunities(@Param("limit") int limit);
 }
