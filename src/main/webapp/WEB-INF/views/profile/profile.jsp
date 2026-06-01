@@ -9,7 +9,7 @@
     <div class="profile-container">
         <div class="profile-card">
             <div class="avatar-section">
-                <div class="avatar-container">
+                <div id="avatarContainer" class="avatar-container">
                     <img id="avatarImage" alt="Avatar" class="avatar-img" style="display: none;">
                     <span id="avatarInitial" class="avatar-initial">U</span>
                 </div>

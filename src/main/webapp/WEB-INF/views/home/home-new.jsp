@@ -7,28 +7,28 @@
     <div class="row mb-6" id="homeStatsRow">
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">🏘️</div>
+                <div class="text-3xl mb-2"><i class="fas fa-building"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="statCommunities">0</div>
                 <div class="text-sm text-gray-500">Communities</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📅</div>
+                <div class="text-3xl mb-2"><i class="fas fa-calendar"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="statTotalEvents">0</div>
                 <div class="text-sm text-gray-500">Events</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">👥</div>
+                <div class="text-3xl mb-2"><i class="fas fa-users"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="statParticipants">0</div>
                 <div class="text-sm text-gray-500">Participants</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📝</div>
+                <div class="text-3xl mb-2"><i class="fas fa-file-alt"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="statPendingApps">0</div>
                 <div class="text-sm text-gray-500">Pending Applications</div>
             </div>
@@ -59,11 +59,11 @@
 
     <div class="mb-4 d-flex justify-content-between">
         <h3 class="font-bold">My Communities</h3>
-        <a href="#communities" onclick="showPage('communities')" class="text-primary">View All &rarr;</a>
+        <a href="#communities" onclick="showCommunitiesFilter('all')" class="text-primary">View All &rarr;</a>
     </div>
     <div class="row" id="myCommunitiesList">
         <div class="col-md-12 text-center text-gray-500 py-8">
-            <div class="text-4xl mb-3">🔍</div>
+            <div class="text-4xl mb-3"><i class="fas fa-search"></i></div>
             <p>You haven't joined any communities yet</p>
             <p class="text-sm">Search and apply to join communities above</p>
         </div>
@@ -75,7 +75,7 @@
     </div>
     <div class="row" id="myApplicationsList">
         <div class="col-md-12 text-center text-gray-500 py-8">
-            <div class="text-4xl mb-3">📋</div>
+            <div class="text-4xl mb-3"><i class="fas fa-clipboard-list"></i></div>
             <p>No pending applications</p>
         </div>
     </div>

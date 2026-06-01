@@ -47,6 +47,12 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventResponse createEvent(EventCreateRequest request) {
+        return createEvent(request, null);
+    }
+
+    @Override
+    @Transactional
+    public EventResponse createEvent(EventCreateRequest request, Integer userId) {
         if (request.getCategoryId() != null) {
             Category category = categoryMapper.selectById(request.getCategoryId());
             if (category == null) {
@@ -60,16 +66,12 @@ public class EventServiceImpl implements EventService {
         event.setLocation(request.getLocation());
         event.setDescription(request.getDescription());
         event.setCategoryId(request.getCategoryId());
+        event.setCommunityId(request.getCommunityId());
+        event.setCreatorId(userId);
         event.setStatus("UPCOMING");
 
         eventMapper.insert(event);
         return getEventById(event.getEventId());
-    }
-
-    @Override
-    @Transactional
-    public EventResponse createEvent(EventCreateRequest request, Integer userId) {
-        return createEvent(request);
     }
 
     /**
@@ -305,6 +307,7 @@ public class EventServiceImpl implements EventService {
         response.setLocation(event.getLocation());
         response.setDescription(event.getDescription());
         response.setCategoryId(event.getCategoryId());
+        response.setCommunityId(event.getCommunityId());
 
         if (event.getCategoryId() != null) {
             Category category = categoryMapper.selectById(event.getCategoryId());

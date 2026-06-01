@@ -13,7 +13,7 @@
     </select>
     <select id="selectPageByCommunityAndStatus" resultType="com.bubbles.pojo.entity.CommunityApplication">
         SELECT <include refid="baseColumns"/> FROM community_applications
-        <where>community_id = #{communityId}<if test="status != null and status != ''">AND status = #{status}</if></where>
+        <where>community_id = #{communityId} <if test="status != null and status != ''">AND status = #{status}</if></where>
         ORDER BY apply_time DESC
     </select>
     <select id="selectPageByUserId" resultType="com.bubbles.pojo.entity.CommunityApplication">

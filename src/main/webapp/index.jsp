@@ -637,16 +637,16 @@
                         <i class="fas fa-chevron-down subnav-arrow ms-auto"></i>
                     </a>
                     <div class="subnav" id="communitiesSubnav">
-                        <a class="nav-link sub" href="#communities" onclick="showCommunitiesFilter('all')" data-route="communities">
+                        <a class="nav-link sub" href="javascript:void(0)" onclick="showCommunitiesFilter('all')" data-route="communities">
                             <i class="fas fa-globe"></i> All Communities
                         </a>
-                        <a class="nav-link sub" href="#communities" onclick="showCommunitiesFilter('joined')" data-route="communities">
+                        <a class="nav-link sub" href="javascript:void(0)" onclick="showCommunitiesFilter('joined')" data-route="communities">
                             <i class="fas fa-user-check"></i> My Joined
                         </a>
-                        <a class="nav-link sub" href="#communities" onclick="showCommunitiesFilter('created')" data-route="communities">
+                        <a class="nav-link sub" href="javascript:void(0)" onclick="showCommunitiesFilter('created')" data-route="communities">
                             <i class="fas fa-user-edit"></i> My Created
                         </a>
-                        <a class="nav-link sub create-community" href="#create-community" onclick="showPage('create-community')" data-route="create-community">
+                        <a class="nav-link sub create-community" href="javascript:void(0)" onclick="showPage('create-community')" data-route="create-community">
                             <i class="fas fa-plus-circle"></i> Create Community
                         </a>
                     </div>
@@ -686,17 +686,17 @@
             <header class="top-navbar">
                 <div class="user-area">
                     <div id="userMenuContainer" class="relative" style="z-index: 99999;">
-                        <div id="avatarWrapper" class="cursor-pointer relative" style="width: 48px; height: 48px; z-index: 99999;">
-                            <div id="avatarInner" class="absolute inset-0 rounded-full overflow-hidden transition-all duration-300 ease-out" style="border: 2px solid transparent;">
-                                <img id="headerAvatar" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none;">
-                                <span id="headerAvatarInitial" class="w-full h-full flex items-center justify-center text-white font-semibold text-lg" style="background: var(--primary-color);">U</span>
+                        <div id="avatarWrapper" style="width: 48px; height: 48px; z-index: 99999; cursor: pointer; position: relative;">
+                            <div id="avatarInner" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%; overflow: hidden; transition: all 0.3s ease-out; border: 2px solid transparent;">
+                                <img id="headerAvatar" src="" alt="Avatar" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                                <span id="headerAvatarInitial" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 18px; background: var(--primary-color);">U</span>
                             </div>
                         </div>
                         <div id="userMenu" class="opacity-0 invisible pointer-events-none" style="position: fixed; z-index: 99999; width: 300px; background-color: rgba(36, 36, 36, 0.98); border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); transform: scale(0.6); transform-origin: 50% 0; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s ease;">
                             <div style="position: absolute; top: -42px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; z-index: 10;">
                                 <div style="width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid rgba(36, 36, 36, 0.98); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4); background: #2a2a2a;">
-                                    <img id="menuAvatar" src="" alt="Avatar" class="w-full h-full object-cover" style="display: none; object-position: center;">
-                                    <span id="menuAvatarInitial" class="w-full h-full flex items-center justify-center text-white font-bold text-3xl" style="background: var(--primary-color);">U</span>
+                                    <img id="menuAvatar" src="" alt="Avatar" style="display: none; width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                                    <span id="menuAvatarInitial" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 30px; background: var(--primary-color);">U</span>
                                 </div>
                             </div>
                             <div style="height: 48px; background: linear-gradient(135deg, #25B8A6 0%, #1A8E83 100%); border-radius: 13px 13px 0 0;"></div>

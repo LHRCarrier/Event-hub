@@ -1,6 +1,6 @@
 <div id="page-create-community" class="page-content d-none">
     <div class="mb-4">
-        <button class="btn btn-outline-primary" onclick="showPage('communities')">
+        <button class="btn btn-outline-primary" onclick="showCommunitiesFilter('all')">
             <i class="fas fa-arrow-left me-2"></i>Back
         </button>
     </div>
@@ -25,7 +25,7 @@
             </div>
 
             <div class="d-flex gap-3">
-                <button type="button" class="btn btn-secondary" onclick="showPage('communities')">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="showCommunitiesFilter('all')">Cancel</button>
                 <button type="submit" class="btn btn-primary ms-auto">Create Community</button>
             </div>
         </form>

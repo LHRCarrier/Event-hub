@@ -10,28 +10,28 @@
     <div class="row mb-6" id="communityDashboardStatsRow">
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">👥</div>
+                <div class="text-3xl mb-2"><i class="fas fa-users"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="dbTotalMembers">0</div>
                 <div class="text-sm text-gray-500">Total Members</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📅</div>
+                <div class="text-3xl mb-2"><i class="fas fa-calendar"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="dbTotalEvents">0</div>
                 <div class="text-sm text-gray-500">Total Events</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">📝</div>
+                <div class="text-3xl mb-2"><i class="fas fa-file-alt"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="dbTotalRegistrations">0</div>
                 <div class="text-sm text-gray-500">Total Registrations</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card p-4 bg-white">
-                <div class="text-3xl mb-2">🔄</div>
+                <div class="text-3xl mb-2"><i class="fas fa-clock"></i></div>
                 <div class="text-2xl font-bold text-gray-800" id="dbUpcomingEvents">0</div>
                 <div class="text-sm text-gray-500">Upcoming Events</div>
             </div>
@@ -44,7 +44,7 @@
                 <h3 class="font-bold mb-4">Recent Registrations</h3>
                 <div id="recentRegistrationsList">
                     <div class="text-center text-gray-500 py-6">
-                        <div class="text-3xl mb-2">📋</div>
+                        <div class="text-3xl mb-2"><i class="fas fa-clipboard-list"></i></div>
                         <p>No recent registrations</p>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
                 <h3 class="font-bold mb-4">Pending Applications</h3>
                 <div id="pendingApplicationsList">
                     <div class="text-center text-gray-500 py-6">
-                        <div class="text-3xl mb-2">⏳</div>
+                        <div class="text-3xl mb-2"><i class="fas fa-hourglass-half"></i></div>
                         <p>No pending applications</p>
                     </div>
                 </div>

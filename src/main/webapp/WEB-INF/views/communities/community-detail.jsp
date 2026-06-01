@@ -1,6 +1,6 @@
 <div id="page-community-detail" class="page-content d-none">
     <div class="mb-4">
-        <button class="btn btn-outline-primary" onclick="showPage('communities')">
+        <button class="btn btn-outline-primary" onclick="showCommunitiesFilter('all')">
             <i class="fas fa-arrow-left me-2"></i>Back to Communities
         </button>
     </div>

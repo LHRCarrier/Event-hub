@@ -1,6 +1,6 @@
 <div id="page-community-home" class="page-content d-none">
     <div class="mb-4">
-        <button class="btn btn-outline-primary" onclick="showPage('communities')">
+        <button class="btn btn-outline-primary" onclick="showCommunitiesFilter('all')">
             <i class="fas fa-arrow-left me-2"></i>Back to Communities
         </button>
     </div>
@@ -8,7 +8,7 @@
     <div id="communityHomeContent">
         <div class="community-banner p-6 mb-6">
             <div class="d-flex align-items-center">
-                <div class="text-5xl mr-4" id="communityLogo">🏘️</div>
+                <div class="text-5xl mr-4" id="communityLogo"><i class="fas fa-building"></i></div>
                 <div>
                     <h1 class="text-white text-3xl font-bold" id="communityName">Community Name</h1>
                     <p class="text-purple-100 mt-2" id="communityDescription">Community description</p>
@@ -19,28 +19,28 @@
         <div class="row mb-6" id="communityStatsRow">
             <div class="col-md-3">
                 <div class="stat-card p-4 bg-white">
-                    <div class="text-3xl mb-2">👥</div>
+                    <div class="text-3xl mb-2"><i class="fas fa-users"></i></div>
                     <div class="text-2xl font-bold text-gray-800" id="statCommunityMembers">0</div>
                     <div class="text-sm text-gray-500">Members</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card p-4 bg-white">
-                    <div class="text-3xl mb-2">📅</div>
+                    <div class="text-3xl mb-2"><i class="fas fa-calendar"></i></div>
                     <div class="text-2xl font-bold text-gray-800" id="statCommunityEvents">0</div>
                     <div class="text-sm text-gray-500">Events</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card p-4 bg-white">
-                    <div class="text-3xl mb-2">📝</div>
+                    <div class="text-3xl mb-2"><i class="fas fa-file-alt"></i></div>
                     <div class="text-2xl font-bold text-gray-800" id="statCommunityRegistrations">0</div>
                     <div class="text-sm text-gray-500">Registrations</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card p-4 bg-white">
-                    <div class="text-3xl mb-2">🔄</div>
+                    <div class="text-3xl mb-2"><i class="fas fa-clock"></i></div>
                     <div class="text-2xl font-bold text-gray-800" id="statCommunityUpcoming">0</div>
                     <div class="text-sm text-gray-500">Upcoming Events</div>
                 </div>
@@ -73,7 +73,7 @@
                         </div>
                         <div id="communityRecentEvents">
                             <div class="text-center text-gray-500 py-6">
-                                <div class="text-3xl mb-2">📅</div>
+                                <div class="text-3xl mb-2"><i class="fas fa-calendar"></i></div>
                                 <p>No events yet</p>
                             </div>
                         </div>
@@ -87,7 +87,7 @@
                         </div>
                         <div id="communityNewMembers">
                             <div class="text-center text-gray-500 py-6">
-                                <div class="text-3xl mb-2">👥</div>
+                                <div class="text-3xl mb-2"><i class="fas fa-users"></i></div>
                                 <p>No members yet</p>
                             </div>
                         </div>
@@ -125,13 +125,13 @@
                                 <th id="thMemberActions" style="display:none;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="communityMembersTableBody">
+                        <tbody id="communityMembersTabTableBody">
                             <tr><td colspan="4" class="text-center text-gray-500">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <nav class="pagination-container" aria-label="Community members pagination">
-                    <ul class="pagination" id="communityMembersPagination"></ul>
+                    <ul class="pagination" id="communityMembersTabPagination"></ul>
                 </nav>
             </div>
         </div>
