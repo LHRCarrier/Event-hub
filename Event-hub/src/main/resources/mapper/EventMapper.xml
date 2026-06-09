@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bubbles.server.mapper.EventMapper">
+
+    <sql id="baseColumns">
+        event_id, name, date, location, location_detail, description, cover_image, category_id, community_id, creator_id, status, max_participants, registration_deadline, view_count, favorite_count, create_time, update_time
+    </sql>
+
+    <resultMap id="EventResultMap" type="com.bubbles.pojo.entity.Event">
+        <id column="event_id" property="eventId" />
+        <result column="name" property="name" />
+        <result column="date" property="date" />
+        <result column="location" property="location" />
+        <result column="location_detail" property="locationDetail" />
+        <result column="description" property="description" />
+        <result column="cover_image" property="coverImage" />
+        <result column="category_id" property="categoryId" />
+        <result column="community_id" property="communityId" />
+        <result column="creator_id" property="creatorId" />
+        <result column="status" property="status" />
+        <result column="max_participants" property="maxParticipants" />
+        <result column="registration_deadline" property="registrationDeadline" />
+        <result column="view_count" property="viewCount" />
+        <result column="favorite_count" property="favoriteCount" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <resultMap id="EventWithCategoryResultMap" type="com.bubbles.pojo.entity.Event" extends="EventResultMap">
+        <result column="category_name" property="categoryName" />
+    </resultMap>
+
+    <select id="selectByStatus" resultMap="EventResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM events
+        WHERE status = #{status}
+        ORDER BY date ASC
+    </select>
+
+    <select id="selectUpcomingEvents" resultMap="EventResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM events
+        WHERE date > NOW()
+        AND status = 'ACTIVE'
+        ORDER BY date ASC
+    </select>
+
+    <select id="findAllWithCategory" resultMap="EventWithCategoryResultMap">
+        SELECT e.*, c.name AS category_name
+        FROM events e
+        LEFT JOIN categories c ON e.category_id = c.category_id
+        ORDER BY e.date DESC
+    </select>
+
+    <select id="searchEvents" resultMap="EventResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM events
+        <where>
+            status = 'ACTIVE'
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+        </where>
+        ORDER BY date ASC
+    </select>
+
+    <select id="selectByCommunity" resultMap="EventResultMap">
+        SELECT <include refid="baseColumns"/>
+        FROM events
+        <where>
+            <if test="communityId != null">
+                community_id = #{communityId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY date ASC
+    </select>
+
+    
+
+</mapper>

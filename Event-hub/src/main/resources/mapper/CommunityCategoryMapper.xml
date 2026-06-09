@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bubbles.server.mapper.CommunityCategoryMapper">
+
+    <resultMap id="CommunityCategoryResultMap" type="com.bubbles.pojo.entity.CommunityCategory">
+        <id column="category_id" property="categoryId" />
+        <result column="community_id" property="communityId" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="sort_order" property="sortOrder" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <select id="findByCommunityId" resultMap="CommunityCategoryResultMap">
+        SELECT category_id, community_id, name, description, sort_order, create_time, update_time
+        FROM community_categories
+        WHERE community_id = #{communityId}
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByNameAndCommunityId" resultMap="CommunityCategoryResultMap">
+        SELECT category_id, community_id, name, description, sort_order, create_time, update_time
+        FROM community_categories
+        WHERE name = #{name} AND community_id = #{communityId}
+    </select>
+
+</mapper>

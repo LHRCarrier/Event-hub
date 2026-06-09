@@ -10,12 +10,10 @@ import com.bubbles.common.exception.BusinessException;
 import com.bubbles.server.mapper.EventMapper;
 import com.bubbles.server.mapper.RegistrationMapper;
 import com.bubbles.server.mapper.UserMapper;
-import com.bubbles.server.service.CommunityMemberService;
 import com.bubbles.server.service.RegistrationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,14 +27,11 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RegistrationMapper registrationMapper;
     private final EventMapper eventMapper;
     private final UserMapper userMapper;
-    private final CommunityMemberService communityMemberService;
 
-    public RegistrationServiceImpl(RegistrationMapper registrationMapper, EventMapper eventMapper,
-                                   UserMapper userMapper, CommunityMemberService communityMemberService) {
+    public RegistrationServiceImpl(RegistrationMapper registrationMapper, EventMapper eventMapper, UserMapper userMapper) {
         this.registrationMapper = registrationMapper;
         this.eventMapper = eventMapper;
         this.userMapper = userMapper;
-        this.communityMemberService = communityMemberService;
     }
 
     /**
@@ -50,39 +45,16 @@ public class RegistrationServiceImpl implements RegistrationService {
     public void registerEvent(RegistrationRequest request) {
         Event event = eventMapper.selectById(request.getEventId());
         if (event == null) {
-            throw new BusinessException(404, "事件不存在");
+            throw new BusinessException(404, "Event not found");
         }
 
         User user = userMapper.selectById(request.getUserId());
         if (user == null) {
-            throw new BusinessException(404, "用户不存在");
-        }
-
-        // 检查活动状态：只允许报名进行中或即将开始的活动
-        if (!"UPCOMING".equals(event.getStatus()) && !"ONGOING".equals(event.getStatus())) {
-            throw new BusinessException(400, "该活动当前状态不允许报名");
-        }
-
-        // 检查报名截止时间
-        if (event.getRegistrationDeadline() != null && new Date().after(event.getRegistrationDeadline())) {
-            throw new BusinessException(400, "报名已截止");
-        }
-
-        // 检查最大参与人数
-        if (event.getMaxParticipants() != null && event.getMaxParticipants() > 0) {
-            int currentCount = registrationMapper.countByEventId(request.getEventId());
-            if (currentCount >= event.getMaxParticipants()) {
-                throw new BusinessException(400, "活动名额已满");
-            }
-        }
-
-        // 检查用户是否为活动所属社区的成员
-        if (event.getCommunityId() != null && !communityMemberService.isMember(event.getCommunityId(), request.getUserId())) {
-            throw new BusinessException(403, "您不是该活动所属社区的成员，无法报名");
+            throw new BusinessException(404, "User not found");
         }
 
         if (registrationMapper.countByEventAndUser(request.getEventId(), request.getUserId()) > 0) {
-            throw new BusinessException(400, "已注册该事件");
+            throw new BusinessException(400, "Already registered for this event");
         }
 
         Registration registration = new Registration();
@@ -103,7 +75,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     public void cancelRegistration(Integer registrationId) {
         Registration registration = registrationMapper.selectById(registrationId);
         if (registration == null) {
-            throw new BusinessException(404, "注册记录不存在");
+            throw new BusinessException(404, "Registration not found");
         }
         registrationMapper.deleteById(registrationId);
     }
@@ -117,7 +89,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     public List<RegistrationResponse> getUserRegistrations(Integer userId) {
         if (userMapper.selectById(userId) == null) {
-            throw new BusinessException(404, "用户不存在");
+            throw new BusinessException(404, "User not found");
         }
 
         List<Registration> registrations = registrationMapper.findByUserId(userId);
@@ -135,7 +107,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     public List<ParticipantResponse> getEventParticipants(Integer eventId) {
         if (eventMapper.selectById(eventId) == null) {
-            throw new BusinessException(404, "事件不存在");
+            throw new BusinessException(404, "Event not found");
         }
 
         List<Registration> registrations = registrationMapper.findByEventId(eventId);

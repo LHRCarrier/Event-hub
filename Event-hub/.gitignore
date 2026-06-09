@@ -1,0 +1,63 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.yml
+
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# Frontend
+node_modules/
+frontend/node_modules/
+.env.local
+.env.*.local
+### AI
+.trae
+.env
+### TEST
+test_api.ps1
+test_api2.ps1
+test_api3.ps1
+test_deployment.ps1
+test_register.ps1
+### 文档
+评审v1.md
+
+# 文档类文件（README.md 除外）
+*.md
+!README.md
+*.txt
+*.pptx
+
+# 视觉设计稿和原型
+Mock-background/
+原型/
+新设计布局/

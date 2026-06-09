@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bubbles.server.mapper.CommunityMapper">
+
+    <sql id="baseColumns">
+        community_id, name, description, logo_url, require_approval, creator_id, settings, member_count, event_count, status, create_time, update_time
+    </sql>
+
+    <select id="selectActiveCommunities" resultType="com.bubbles.pojo.entity.Community">
+        SELECT <include refid="baseColumns"/>
+        FROM communities
+        WHERE status = 'ACTIVE'
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="searchCommunities" resultType="com.bubbles.pojo.entity.Community">
+        SELECT <include refid="baseColumns"/>
+        FROM communities
+        <where>
+            status = 'ACTIVE'
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findTopByMemberCount" resultType="java.util.HashMap">
+        SELECT c.name, COUNT(cm.member_id) AS member_count
+        FROM communities c
+        LEFT JOIN community_members cm ON c.community_id = cm.community_id AND cm.status = 'ACTIVE'
+        WHERE c.status = 'ACTIVE'
+        GROUP BY c.community_id, c.name
+        ORDER BY member_count DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>
